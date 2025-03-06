@@ -1,0 +1,540 @@
+---
+title: " "
+author: " "
+date: " "
+output: 
+  pdf_document:
+    highlight: tango
+  html_document:
+    df_print: paged
+always_allow_html: true
+
+---
+
+\newpage
+\begin{titlepage}
+\begin{center}
+
+\large
+UNIVERSIDADE FEDERAL DE UBERLÂNDIA\\
+FACULDADE DE ENGENHARIA ELÉTRICA\\
+GRADUAÇÃO EM ENGENHARIA BIOMÉDICA\\[7cm]
+
+\Large
+\textbf{Heitor Pereira Nunes Fernandes Cunha}\\[2cm]
+
+\textbf{\large Processamento de Sinais Biomédicos: Módulo 2}\\[10cm]
+
+\large
+Uberlândia, MG\\
+2025
+
+\end{center}
+\end{titlepage}
+
+\newpage
+\section*{Questão 1}
+
+<!-- LETRA A -->
+> Gere sinais sintéticos que simulem a forma de onda do ciclo respiratório, de acordo a faixa etária:
+
+> do nascimento a 6 semanas: 30 a 40 respirações por minuto;
+> 6 meses: 25 a 40 respirações por minuto;
+> 3 anos: 20 a 30 respirações por minuto;
+> 6 anos: 18 a 25 respirações por minuto;
+> 10 anos: 17 a 23 respirações por minuto;
+> Adultos: 12 a 18 respirações por minuto;
+> Idosos (>= 65 anos): 12 a 28 respirações por minuto;
+> Idosos (>= 80 anos): 10 a 30 respirações por minuto.
+
+>Para gerar sinais sintéticos que simulem a forma de onda do ciclo respiratório de acordo com a faixa etária fornecida, podemos usar uma abordagem baseada em funções de onda senoidal ou cossenoidal, representando a inspiração e a expiração. A frequência respiratória de cada faixa etária será usada para determinar a taxa de oscilação das ondas.
+
+```{r}
+
+# Definição dos parâmetros
+library(ggplot2)
+fs <- 100  # Frequência de amostragem em Hz
+t <- seq(0, 60, by = 1/fs)  # Sinal de 1 minuto
+
+# Faixas de frequência respiratória por idade (em ciclos por minuto)
+faixas_respiratorias <- list(
+  "0-6 semanas" = c(30, 40),
+  "6 meses" = c(25, 40),
+  "3 anos" = c(20, 30),
+  "6 anos" = c(18, 25),
+  "10 anos" = c(17, 23),
+  "Adultos" = c(12, 18),
+  "Idosos >=65 anos" = c(12, 28),
+  "Idosos >=80 anos" = c(10, 30)
+)
+
+# Inicializando o dataframe
+ df_sinais <- data.frame(Tempo = numeric(), Sinal = numeric(), Idade = character())
+
+# Gerando os sinais sintéticos
+for (idade in names(faixas_respiratorias)) {
+  freq_min <- faixas_respiratorias[[idade]][1]
+  freq_max <- faixas_respiratorias[[idade]][2]
+  freq_respiratoria <- runif(1, freq_min, freq_max) / 60  # Convertendo para Hz
+  sinal <- sin(2 * pi * freq_respiratoria * t)  # Onda senoidal simulando respiração
+  df_sinais <- rbind(df_sinais, data.frame(Tempo = t, Sinal = sinal, Idade = rep(idade, length(t))))
+}
+
+```
+
+<!-- LETRA B -->
+
+> Utilize a função ggplot para plotar cada um dos sinais gerados no item a. A imagem resultante deverá conter um painel dividido em duas colunas e quatro linhas. Dica: utilize a função facet_wrap da biblioteca ggplot2. Adicione legendas para os eixos x e y de cada gráfico.
+
+```{r}
+
+library(ggplot2)
+library(htmltools)
+
+# Plotando os sinais
+graficos <- ggplot(df_sinais, aes(x = Tempo, y = Sinal, color = Idade)) +
+  geom_line() +
+  facet_wrap(~ Idade, ncol = 2) +
+  scale_color_manual(values = rainbow(length(faixas_respiratorias))) +
+  labs(x = "Tempo (s)", y = "Amplitude do Sinal", color = "Faixa Etaria") +
+  theme_minimal()
+
+print(graficos)
+
+```
+
+<!-- LETRA C -->
+
+> Utilize a bliblioteca dygraph para gerar um gráfico para cada um dos sinais simulados no item a. Adicione legendas para os eixos x e y de cada gráfico. O resultado final deverá ser apresentado em um único painel html contendo os gráficos gerados. Dica: veja o código exemplo que faz algo semelhando ao que está sendo solicitado na questão.
+
+```{r, eval = knitr::is_html_output()}
+
+library(dygraphs)
+library(RColorBrewer)
+library(htmltools)
+library(magrittr)
+
+# Criando uma lista para armazenar os gráficos
+graficos <- list()
+
+# Gerando os sinais sintéticos e os gráficos dygraph
+for (idade in names(faixas_respiratorias)) {
+  freq_min <- faixas_respiratorias[[idade]][1]
+  freq_max <- faixas_respiratorias[[idade]][2]
+  freq_respiratoria <- runif(1, freq_min, freq_max) / 60  
+  sinal <- sin(2 * pi * freq_respiratoria * t)  
+  df_sinal <- data.frame(Tempo = t, Sinal = sinal)
+  
+  graficos[[idade]] <- tagList(
+    tags$h3(idade),
+    dygraph(df_sinal) %>%
+      dyAxis("x", label = "Tempo (s)") %>%
+      dyAxis("y", label = "Amplitude do Sinal") %>%
+      dyOptions(colors = RColorBrewer::brewer.pal(8, "Dark2")) %>%
+      dyLegend("always")
+  )
+}
+
+# Criando painel HTML
+html_page <- tagList(
+  tags$html(
+    tags$head(tags$title("Sinais Respiratórios")),
+    tags$body(
+      lapply(graficos, function(g) tagList(g, tags$br()))
+    )
+  )
+)
+
+# Salvando o painel HTML
+save_html(html_page, "sinais_respiratorios.html")
+
+```
+
+<!-- LETRA D -->
+
+>Escolha um sinal simulado no item a, e plote-o utilizando a função dyStemSeries. Por que há um intervalo temporal entre cada amostra? Dica: sua resposta deve ser completa e deve abordar conceitos como amostragem e digitalização de sinais.
+
+```{r}
+
+library(xts)
+library(magrittr)
+library(dygraphs)
+
+# Criando um dataframe apenas para 3 anos
+df_3_anos <- data.frame(Tempo = t, Sinal = sinal, Idade = "3 anos")
+
+# Criando um objeto xts para uso com dygraphs
+data_xts <- xts(df_3_anos$Sinal, order.by = as.POSIXct(df_3_anos$Tempo, origin = "1970-01-01"))
+
+# Plotando o sinal com dygraph utilizando dyStemSeries
+dygraph(data_xts, main = "Respiração - Criança de 3 anos") %>%
+  dyStemSeries("V1", label = "Respiração") %>%
+  dyAxis("x", label = "Tempo (s)") %>%
+  dyAxis("y", label = "Amplitude do Sinal") %>%
+  dyOptions(drawGrid = TRUE)
+  
+```
+
+O intervalo temporal entre as amostras ocorre porque o dygraph trabalha com objetos xts, que exigem que o eixo do tempo seja definido com valores do tipo POSIXct (data e hora). No seu código, os tempos são convertidos usando as.POSIXct(df_3_anos$Tempo, origin = "1970-01-01"), o que significa que o tempo está sendo tratado como uma série temporal. Portanto, mesmo que os valores originais de Tempo sejam espaçados uniformemente (0, 0.01, 0.02, ..., 60 segundos), o dygraph pode exibir a série de forma que os pontos pareçam estar distribuídos com espaços irregulares, dependendo da escala automática aplicada pelo gráfico. 
+
+\newpage
+\section*{Questão 2}
+
+> O armazenamento de dados2 biomédicos pode acontecer em diverso formatos, incluindo o formato de programas comerciais como o Matlab. Neste caso, é relevante conseguir abrir arquivos gerados em outros formatos no ambiente do R. Nesta questão você deverá abrir e plotar dados2 biomédicos de uma arquivo no formato .mat (Matlab). Os seguintes passos devem ser executados:
+
+<!-- LETRA A -->
+
+```{r}
+
+library(R.matlab)
+
+dados2 <- readMat("C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 2/A07.mat")
+
+```
+
+<!-- LETRA B -->
+
+> Gerar um gráfico de cada um das três variáveis disponíveis no arquivo em função de tempo. A imagem final deverá conter um painel de uma coluna e três linhas. Dica: (i) utilize a função facet_wrap. (ii) a resolução temporal, ou seja, o intervalo entre amostras está disponível na variável isi cuja a unidade é “ms”. (iii) deve-se gerar legendas para os eixos dos gráficos. (iv) filtre os dados2 em um intervalo de tempo para que seja possível visualizar as informações. Você pode considerar o tempo entre 0 e 10 segundos, por exemplo.
+
+```{r}
+
+# Carregar os pacotes
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(readxl)
+
+# Verificar estrutura dos dados antes de converter
+str(dados2$data)
+
+# Converter os dados para dataframe corretamente
+data <- as.data.frame(dados2$data)
+colnames(data) <- c("Variavel1", "Variavel2", "Variavel3")
+
+# Garantir que isi seja um valor único e válido
+isi <- as.numeric(dados2$isi[1]) / 1000  # Convertendo de ms para segundos
+
+# Criar vetor de tempo corretamente
+tempo <- seq(0, (nrow(data) - 1) * isi, length.out = nrow(data))
+
+# Adicionar o tempo ao dataframe
+data$Tempo <- tempo
+
+# Filtrar o intervalo de tempo entre 0 e 10 segundos
+data_filtrada <- data %>% filter(Tempo >= 0 & Tempo <= 10)
+
+# Converter para formato longo para ggplot
+data_long <- pivot_longer(data_filtrada, cols = c("Variavel1", "Variavel2", "Variavel3"), 
+                          names_to = "Variável", values_to = "Valor")
+
+# Criar o gráfico com facet_wrap
+ggplot(data_long, aes(x = Tempo, y = Valor)) +
+  geom_line(color = "blue") +
+  facet_wrap(~Variável, ncol = 1, scales = "free_y") +  # Uma coluna e três linhas
+  labs(x = "Tempo (s)", y = "Amplitude", title = "Sinais em função do tempo") +
+  theme_minimal()
+
+```
+
+<!-- LETRA C -->
+
+> Utilize a função ggsave da biblioteca ggplot2 para salvar o gráfico resultante. Considere o trecho de sinal entre 0 e 10 segundos. Você deve salvar as imagens nos formatos pdf e png, considerando as dimensões de 100 mm de largura por 200 mm de altura, e a resolução (dpi) de 300. As imagens geradas em cada um dos arquivos deve ser apresentada no relatório.
+
+```{r}
+
+# Salvar o gráfico nos formatos PDF e PNG
+ggsave("sinais_respiracao.pdf", width = 100, height = 200, units = "mm", dpi = 300)
+ggsave("sinais_respiracao.png", width = 100, height = 200, units = "mm", dpi = 300)
+
+```
+
+\newpage
+\section*{Questão 3}
+
+> A base de dados disponível na plataforma Moodle (ver figura abaixo) foi coletada utilizando-se o dispositivo TREMSEN (Precise Tremor Sensing), que é um dispositivo para a coleta de dados inerciais (i.e., movimentos).
+
+> A coleta de dados foi executada considerando os seguinte protocolo:
+
+> a) Um acelerômetro triaxial foi posicionado no dorso da mão, sobre o osso Capitato.
+
+> b) O eixo X do acelerômetro foi alinhado paralelamente à terceira falange distal.
+
+> c) Os dados foram coletados enquanto o participante realizava os seguintes movimentos: – 5 flexões do punho; – 5 extensões do punho; – 5 aduções do punho; – 5 abduções do punho.
+
+> Os dados coletados foram salvos no formato EDF e TXT, e nomeados de acordo com o tipo de movimento realizado (Adução, Flexão e Rotação).
+
+<!-- LETRA A -->
+
+```{r}
+
+library(readr)
+library(writexl)
+
+arquivos_txt <- c("C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Aduccao.txt", 
+                  "C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Flexao.txt", 
+                  "C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Rotacao.txt")
+arquivos_xls <- c("C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Aduccao.xlsx", 
+                  "C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Flexao.xlsx", 
+                  "C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Rotacao.xlsx")
+
+# Função para converter TXT para XLSX
+converter_para_xlsx <- function(arquivo_txt, arquivo_xlsx) {
+  dados <- read_delim(arquivo_txt, delim = "\t", skip = 2, col_names = TRUE)
+  write_xlsx(dados, arquivo_xlsx)
+  
+  cat(paste("Arquivo salvo:", arquivo_xlsx, "\n"))
+}
+
+# Converter cada arquivo
+mapply(converter_para_xlsx, arquivos_txt, arquivos_xls)
+
+
+```
+
+<!-- LETRA B -->
+
+> Salvar o arquivo xls gerado no formato csv.
+
+```{r}
+
+# Carregar os pacotes
+library(readxl)
+
+# Definir os caminhos dos arquivos XLSX e CSV
+arquivos_xlsx <- c("C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Aduccao.xlsx", 
+                   "C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Flexao.xlsx", 
+                   "C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Rotacao.xlsx")
+
+arquivos_csv <- c("C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Aduccao.csv", 
+                  "C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Flexao.csv", 
+                  "C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Rotacao.csv")
+
+# Função para converter XLSX para CSV
+converter_para_csv <- function(arquivo_xlsx, arquivo_csv) {
+  # Ler o arquivo XLSX
+  dados <- read_excel(arquivo_xlsx)
+  
+  # Salvar como CSV
+  write.csv(dados, arquivo_csv, row.names = FALSE)
+  
+  cat(paste("Arquivo salvo:", arquivo_csv, "\n"))
+}
+
+# Converter cada arquivo
+mapply(converter_para_csv, arquivos_xlsx, arquivos_csv)
+
+
+```
+
+<!-- LETRA C -->
+
+> Abrir o arquivo coletado em xls no R e gerar um gráfico utilizando o ggplot. Incluir legendas dos eixos x - tempo (s) e y - amplitude (g).
+
+```{r}
+
+# Carregar os pacotes
+library(readxl)
+library(ggplot2)
+library(dplyr)
+
+# Definir os caminhos dos arquivos XLSX
+arquivos_xlsx <- c("C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Aduccao.xlsx", 
+                   "C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Flexao.xlsx", 
+                   "C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Rotacao.xlsx")
+
+nomes_movimentos <- c("Adução", "Rotação", "Flexão")
+
+# Função para carregar e organizar os dados
+carregar_dados <- function(arquivo, movimento) {
+  dados <- read_excel(arquivo, col_names = FALSE)  # Ler sem nomes de colunas
+  colnames(dados)[1:2] <- c("Tempo", "Amplitude")  # Nomear as duas primeiras colunas relevantes
+  dados <- dados %>% select(Tempo, Amplitude)  # Selecionar apenas Tempo e Amplitude
+  dados$Movimento <- movimento
+  return(dados)
+}
+
+# Criar gráficos separados para cada movimento
+for (i in 1:3) {
+  dados <- carregar_dados(arquivos_xlsx[i], nomes_movimentos[i])
+  
+  p <- ggplot(dados, aes(x = Tempo, y = Amplitude)) +
+    geom_line(color = "blue") +
+    labs(x = "Tempo (s)", y = "Amplitude (g)", title = paste("Movimento:", nomes_movimentos[i])) +
+    theme_minimal()
+  
+  print(p)
+}
+
+
+```
+
+<!-- LETRA D -->
+
+> Abrir o arquivo coletado em csv no R e gerar um gráfico utilizando o ggplot. Incluir as legendas dos eixos x - tempo (s) e y - amplitude (g).
+
+```{r}
+
+# Carregar os pacotes
+library(ggplot2)
+library(readr)
+library(patchwork)
+
+# Definir os caminhos dos arquivos CSV
+arquivos_csv <- c("C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Aduccao.csv",
+                  "C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Rotacao.csv",
+                  "C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Flexao.csv")
+
+nomes_movimentos <- c("Adução", "Rotação", "Flexão")
+
+# Função para carregar os dados e gerar o gráfico
+gerar_grafico <- function(arquivo_csv, movimento) {
+  # Ler o arquivo CSV
+  dados <- read_csv(arquivo_csv)
+  
+  # Ajustar os nomes das colunas, se necessário
+  colnames(dados)[1:2] <- c("Tempo", "Amplitude")  # Ajuste conforme necessário
+
+  # Criar o gráfico
+  p <- ggplot(dados, aes(x = Tempo, y = Amplitude)) +
+    geom_line(color = "blue") +
+    labs(x = "Tempo (s)", y = "Amplitude (g)", title = paste("Movimento:", movimento)) +
+    theme_minimal()
+  
+  return(p)
+}
+
+# Gerar os três gráficos
+graficos <- lapply(1:3, function(i) gerar_grafico(arquivos_csv[i], nomes_movimentos[i]))
+
+# Combinar os gráficos um abaixo do outro
+final_plot <- graficos[[1]] / graficos[[2]] / graficos[[3]] + plot_layout(nrow = 3)
+
+# Exibir os gráficos
+print(final_plot)
+
+
+```
+
+<!-- LETRA E -->
+
+> Abrir o arquivo coletado em edf no R e gerar um gráfico utilizando o ggplot. Incluir as legendas dos eixos x - tempo (s) e y - amplitude (g).
+
+```{r}
+
+# Carregar os pacotes
+library(edfReader)
+library(ggplot2)
+library(patchwork)
+
+# Definir os caminhos dos arquivos EDF
+arquivos_edf <- c("C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Aduccao.edf",
+                  "C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Rotacao.edf",
+                  "C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 3/Flexao.edf")
+
+nomes_movimentos <- c("Adução", "Rotação", "Flexão")
+
+# Função para carregar os dados e gerar o gráfico
+gerar_grafico <- function(arquivo_edf, movimento) {
+  # Ler o arquivo EDF
+  edf <- readEdfHeader(arquivo_edf)  # Lê o cabeçalho do arquivo
+  sinais <- readEdfSignals(edf)  # Lê os sinais do arquivo
+  
+  # Exibir os nomes dos sinais disponíveis
+  print(names(sinais))
+  
+  # Selecionar o primeiro sinal disponível para plotagem
+  tempo <- seq(0, length(sinais[[1]]$signal) - 1) / sinais[[1]]$sRate  # Criar vetor de tempo
+  amplitude <- sinais[[1]]$signal  # Sinal correspondente
+  
+  # Criar dataframe
+  dados <- data.frame(Tempo = tempo, Amplitude = amplitude)
+  
+  # Criar o gráfico
+  p <- ggplot(dados, aes(x = Tempo, y = Amplitude)) +
+    geom_line(color = "blue") +
+    labs(x = "Tempo (s)", y = "Amplitude", title = paste("Movimento:", movimento)) +
+    theme_minimal()
+  
+  return(p)
+}
+
+# Gerar os três gráficos
+graficos <- lapply(1:3, function(i) gerar_grafico(arquivos_edf[i], nomes_movimentos[i]))
+
+# Combinar os gráficos um abaixo do outro
+final_plot <- graficos[[1]] / graficos[[2]] / graficos[[3]] + plot_layout(nrow = 3)
+
+# Exibir os gráficos
+print(final_plot)
+
+```
+
+\newpage
+\section*{Questão 4}
+
+> Arquivos do tipo EDF são bastante utilizados na indústria pois eles possuem uma padronização que permite o fácil compartilhamento de dados. Nesta questão você deverá compreender a estrutura básica de um arquivo EDF (https://www.edfplus.info/specs/edf.html) e responder os seguintes itens:
+
+<!-- Letra A -->
+
+> Importe o arquivo binário V16C1RCC92.edf. Dica: utilize a biblioteca readr e a função read_file_raw.
+
+```{r}
+
+# Instalar o pacote caso não esteja instalado
+if (!require(readr)) install.packages("readr", repos = "http://cran.us.r-project.org")
+
+# Carregar o pacote
+library(readr)
+
+# Definir o caminho do arquivo
+arquivo_edf <- "C:/Users/heito/Desktop/Módulo 2 - PSB/Questão 4/V16C1RCC92.edf"
+
+# Ler o arquivo binário
+dados_4 <- read_file_raw(arquivo_edf)
+
+```
+<!-- Letra B -->
+
+> Considerando as informações abaixo que podem ser extraídas do arquivo V16C1RCC92.edf, informe o contéudo de cada um dos itens da tabela. Dica: após fazer a leitura do arquivo binário use a função rawToChar.
+
+```{r}
+
+# Carregar o pacote
+library(tibble)
+
+# Criar a tabela com os dados extraídos
+tabela_cabecalho <- tibble::tibble(
+  "Tamanho" = c("8 ascii", "80 ascii", "80 ascii", "8 ascii", "8 ascii", 
+                "8 ascii", "44 ascii", "8 ascii", "8 ascii", "4 ascii"),
+  
+  "Explicação" = c(
+    "Version of this data format (0)",
+    "Local patient identification",
+    "Local recording identification",
+    "Start date of recording (dd.mm.yy)",
+    "Start time of recording (hh.mm.ss)",
+    "Number of bytes in header record",
+    "Reserved",
+    "Number of data records (-1 if unknown)",
+    "Duration of a data record, in seconds",
+    "Number of signals (ns) in data record"
+  ),
+  
+  "Conteúdo Extraído" = c(
+    "0",
+    "X X X X",
+    "Startdate 24-JAN-2018 X X TREMESEN_Firmware_version:_V2.4-2017",
+    "24.01.18",
+    "14.13.47",
+    "10752",
+    "EDF+C",
+    "21",
+    "1",
+    "41"
+  )
+)
+
+# Exibir a tabela
+print(tabela_cabecalho)
+
+```
