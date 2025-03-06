@@ -1,0 +1,220 @@
+---
+title: " "
+author: " "
+date: " "
+output: 
+  pdf_document:
+    highlight: tango
+  html_document:
+    df_print: paged
+always_allow_html: true
+
+---
+
+\newpage
+\begin{titlepage}
+\begin{center}
+
+\large
+UNIVERSIDADE FEDERAL DE UBERLÂNDIA\\
+FACULDADE DE ENGENHARIA ELÉTRICA\\
+GRADUAÇÃO EM ENGENHARIA BIOMÉDICA\\[7cm]
+
+\Large
+\textbf{Heitor Pereira Nunes Fernandes Cunha}\\[2cm]
+
+\textbf{\large Processamento de Sinais Biomédicos: Módulo 5}\\[10cm]
+
+\large
+Uberlândia, MG\\
+2025
+
+\end{center}
+\end{titlepage}
+
+\newpage
+\section*{Questão 1}
+
+> Considerando os dados disponíveis no arquivo MODULO5.xlsx, disponível na plataforma Moodle, responda às questões:Considerando os dados disponíveis no arquivo MODULO5.xlsx, disponível na plataforma Moodle, responda às questões:
+
+<!-- Letra A -->
+
+> Qual a relação sinal-ruído do período entre 0 e 14 segundos. Faça a estimativa para os canais ch1 e ch2.
+
+```{r}
+
+# Carregando bibliotecas
+library(readxl)
+library(dygraphs)
+library(tidyverse)
+
+# Carregando os dados
+a <- read_xlsx("C:/Users/heito/Documents/GitHub/PSB/Módulo 5 - PSB/MODULO5.xlsx")
+
+# Criando o dataframe para CH1
+CH1 <- data.frame(time = a$time, Amplitude = a$chan.1)
+
+# Observando o sinal de 0 a 14 segundos
+ggplot_CH1 <- dygraph(CH1, main = "Sinal CH1") %>% 
+  dyRangeSelector(dateWindow = c(0, 14))
+
+# Sinal completo
+ggplot_CH1_comp <- dygraph(CH1, main = "Sinal CH1") %>% 
+  dyRangeSelector()
+
+# Função para cálculo do RMS
+rms <- function(x) {
+  x <- na.omit(x) # Removendo valores NA
+  sqrt(mean(x^2))
+}
+
+# Cálculo do RMS para CH1
+CH1_ruidoso <- subset(CH1, time <= 14)
+CH1_rms_ruidoso <- rms(CH1_ruidoso$Amplitude)
+
+rms_CH1 <- rms(CH1$Amplitude)
+
+# Relação sinal-ruído para CH1
+Sinalruido_CH1 <- 20 * log10(rms_CH1 / CH1_rms_ruidoso)
+Sinalruido_CH1
+
+```
+```{r}
+
+# Repetindo o processo para o canal CH2
+
+# Criando o dataframe para CH2
+CH2 <- data.frame(time = a$time, Amplitude = a$chan.2)
+
+# Observando o sinal de 0 a 14 segundos
+ggplot_CH2 <- dygraph(CH2, main = "Sinal CH2") %>% 
+  dyRangeSelector(dateWindow = c(0, 14))
+
+# Sinal completo
+ggplot_CH2_comp <- dygraph(CH2, main = "Sinal CH2") %>% 
+  dyRangeSelector()
+
+# Cálculo do RMS para CH2
+CH2_ruidoso <- subset(CH2, time <= 14)
+CH2_rms_ruidoso <- rms(CH2_ruidoso$Amplitude)
+
+rms_CH2 <- rms(CH2$Amplitude)
+
+# Relação sinal-ruído para CH2
+Sinalruido_CH2 <- 20 * log10(rms_CH2 / CH2_rms_ruidoso)
+Sinalruido_CH2
+
+```
+<!-- Letra B -->
+
+> Faça uma comparação entre os trechos de ruído 1 (entre 0 e 14 s) e ruído 2 (entre 18 e 43 s). Faça a estimativa para os canais ch1 e ch2.
+
+```{r}
+
+# Ruido 1 em CH1_ruidoso
+
+ruido1_CH1 <- CH1_ruidoso
+ruido2_CH1 <- subset(CH1, time >= 18 & time <= 43)
+
+rms_ruido1_CH1 <- rms(ruido1_CH1$Amplitude)
+rms_ruido2_CH1 <- rms(ruido2_CH1$Amplitude)
+
+# Relação ruido p/ CH1
+
+SNR_ruido_CH1 <- 20*log10(rms_ruido2_CH1/rms_ruido1_CH1)
+SNR_ruido_CH1
+
+```
+```{r}
+
+# Repetindo o processo para o CH2
+
+# Ruído 1 em CH2_ruidoso
+ruido1_CH2 <- CH2_ruidoso
+ruido2_CH2 <- subset(CH2, time >= 18 & time <= 43)
+
+rms_ruido1_CH2 <- rms(ruido1_CH2$Amplitude)
+rms_ruido2_CH2 <- rms(ruido2_CH2$Amplitude)
+
+# Relação ruido p/ CH1
+SNR_ruidos_CH2 <- 20*log10(rms_ruido2_CH2/rms_ruido1_CH2)
+SNR_ruidos_CH2
+
+```
+> Para cada um dos canais (ch1 e ch2) estimate o valor da tendência linear constante. O cálculo deve ser feito de forma independente para os trechos de ruído 1 e 2, e para o trecho de sinal (de 45 a 334 s).
+
+```{r}
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
