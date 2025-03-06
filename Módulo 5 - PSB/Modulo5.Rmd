@@ -145,17 +145,161 @@ SNR_ruidos_CH2
 
 ```{r}
 
+# Selecionando a janela desejada
 
+CH1_c <- subset(CH1, time >= 45 & time <= 334)
 
+y1 <- min(CH1_c$Amplitude) * (-1) + CH1_c$Amplitude
 
+# Cálculo da tendência linear p/ CH1
+mean(y1)
+
+```
+```{r}
+
+# Refazendo o processo para CH2
+
+CH2_c <- subset(CH2, time >= 45 & time <= 334)
+
+y2 <- min(CH2_c$Amplitude) * (-1) + CH2_c$Amplitude
+
+# Cálculo da tendência linear p/ CH2
+mean(y2)
+
+```
+<!-- Letra D -->
+
+> Existe alguma discontinuidade nos sinais dos canais 1 e 2? Justifique a sua resposta por meio do uso de um boxplot. Considere em sua análise o trecho de 0 a 40 s.
+
+```{r}
+
+library(plotly)
+
+# Selecionando as janelas desejadas
+CH1_d <- subset(CH1, time >= 0 & time <= 40)
+CH2_d <- subset(CH2, time >= 0 & time <= 40)
+
+# Plotando boxplot p/ CH1
+
+boxplot(CH1_d$Amplitude, main = "Boxplot CH1", ylab = "Amplitude")
+
+```
+> É possível observar que no boxplot plotado referente ao canal 1, há valores majoritariamente negativos, se aproximando de -1000 ao contrário do que pode-se observar no sinal.
+
+```{r}
+
+# Criando um boxplot para o CH2
+boxplot(CH2_d$Amplitude, main = "Boxplot CH2", ylab = "Amplitude")
+
+```
+> Por outro lado, em relação ao boxplot plotado para o CH2, é possível observar valores majoritariamente positivos, se aproximando de 2500. Sendo assim, isso indica a existência de uma descontinuidade entre CH1 e CH2.
+
+```{r}
+
+# Detecção de descontinuidade CH1
+index1 <- which(CH1_d$Amplitude != 0)
+boxplot_1 <- boxplot(CH1_d$Amplitude[index1], plot = FALSE)
+boxplot_1$stat
+
+```
+```{r}
+
+# Cálculo da distância interquartil (IQR)
+boxplot_1 <- boxplot.stats(CH1_d$Amplitude) # Obtendo estatísticas do boxplot
+
+# Terceiro e primeiro quartis
+quartil3 <- boxplot_1$stats[4]
+quartil1 <- boxplot_1$stats[2]
+
+# Distância interquartil
+iqr <- quartil3 - quartil1
+
+# Limite para detecção de outliers
+h <- 1.5 * iqr
+
+# Limiar superior e inferior
+uif <- quartil3 + h
+lif <- quartil1 - h
+
+# Criando colunas para marcar outliers
+CH1_d$uif <- NA
+CH1_d$lif <- NA
+
+# Identificando índices dos outliers superiores e inferiores
+indexUIF <- which(CH1_d$Amplitude > uif)
+indexLIF <- which(CH1_d$Amplitude < lif)
+
+# Marcando outliers nas colunas correspondentes
+CH1_d$uif[indexUIF] <- CH1_d$Amplitude[indexUIF]
+CH1_d$lif[indexLIF] <- CH1_d$Amplitude[indexLIF]
+
+# Plotagem com dygraph
+dygraph(CH1_d, main = "Detecção de outliers CH1 (0 a 40 segundos)") %>%
+  dySeries("Amplitude", label = "Sinal Original") %>%
+  dySeries("uif", drawPoints = TRUE, pointSize = 3, color = "orange", label = "Outliers Sup.") %>%
+  dySeries("lif", drawPoints = TRUE, pointSize = 3, color = "green", label = "Outliers Inf.") %>%
+  dyRangeSelector()
+
+```
+
+```{r}
+
+# Detecção de descontinuidade CH2
+index2 <- which(CH2_d$Amplitude != 0)
+boxplot_2 <- boxplot(CH2_d$Amplitude[index2], plot = FALSE)
+boxplot_2$stat
+
+```
+```{r}
+
+# Cálculo da distância interquartil (IQR)
+boxplot_2 <- boxplot.stats(CH2_d$Amplitude) # Obtendo estatísticas do boxplot
+
+# Terceiro e primeiro quartis
+quartil3_2 <- boxplot_2$stats[4]
+quartil1_2 <- boxplot_2$stats[2]
+
+# Distância interquartil
+iqr2 <- quartil3_2 - quartil1_2
+
+# Limite para detecção de outliers
+h2 <- 1.5 * iqr2
+
+# Limiar superior e inferior
+uif2 <- quartil3 + h2
+lif2 <- quartil1 - h2
+
+# Criando colunas para marcar outliers
+CH2_d$uif2 <- NA
+CH2_d$lif2 <- NA
+
+# Identificando índices dos outliers superiores e inferiores
+indexUIF2 <- which(CH2_d$Amplitude > uif2)
+indexLIF2 <- which(CH2_d$Amplitude < lif2)
+
+# Marcando outliers nas colunas correspondentes
+CH2_d$uif[indexUIF2] <- CH2_d$Amplitude[indexUIF2]
+CH2_d$lif[indexLIF2] <- CH2_d$Amplitude[indexLIF2]
+
+# Plotagem com dygraph
+dygraph(CH2_d, main = "Detecção de outliers CH2 (0 a 40 segundos)") %>%
+  dySeries("Amplitude", label = "Sinal Original") %>%
+  dySeries("uif", drawPoints = TRUE, pointSize = 3, color = "orange", label = "Outliers Sup.") %>%
+  dySeries("lif", drawPoints = TRUE, pointSize = 3, color = "green", label = "Outliers Inf.") %>%
+  dyRangeSelector()
 
 
 ```
 
+<!-- Letra E -->
 
+> Caso exista alguma discontinuidade no sinal (ver letra d) faça a remoção da mesma por meio do método de interpolação linear.Gere um gráfico que ilustre o trecho do sinal com e sem a descontinuidade.
 
+```{r}
 
+# F
 
+```
 
 
 
