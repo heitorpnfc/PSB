@@ -35,7 +35,7 @@ Uberlândia, MG\\
 \newpage
 \section*{Questão 1}
 
-> Considerando os dados disponíveis no arquivo MODULO5.xlsx, disponível na plataforma Moodle, responda às questões:Considerando os dados disponíveis no arquivo MODULO5.xlsx, disponível na plataforma Moodle, responda às questões:
+> Considerando os dados disponíveis no arquivo MODULO5.xlsx, disponível na plataforma Moodle, responda às questões: Considerando os dados disponíveis no arquivo MODULO5.xlsx, disponível na plataforma Moodle, responda às questões:
 
 <!-- Letra A -->
 
@@ -266,8 +266,8 @@ iqr2 <- quartil3_2 - quartil1_2
 h2 <- 1.5 * iqr2
 
 # Limiar superior e inferior
-uif2 <- quartil3 + h2
-lif2 <- quartil1 - h2
+uif2 <- quartil3_2 + h2
+lif2 <- quartil1_2 - h2
 
 # Criando colunas para marcar outliers
 CH2_d$uif2 <- NA
@@ -278,14 +278,14 @@ indexUIF2 <- which(CH2_d$Amplitude > uif2)
 indexLIF2 <- which(CH2_d$Amplitude < lif2)
 
 # Marcando outliers nas colunas correspondentes
-CH2_d$uif[indexUIF2] <- CH2_d$Amplitude[indexUIF2]
-CH2_d$lif[indexLIF2] <- CH2_d$Amplitude[indexLIF2]
+CH2_d$uif2[indexUIF2] <- CH2_d$Amplitude[indexUIF2]
+CH2_d$lif2[indexLIF2] <- CH2_d$Amplitude[indexLIF2]
 
 # Plotagem com dygraph
 dygraph(CH2_d, main = "Detecção de outliers CH2 (0 a 40 segundos)") %>%
   dySeries("Amplitude", label = "Sinal Original") %>%
-  dySeries("uif", drawPoints = TRUE, pointSize = 3, color = "orange", label = "Outliers Sup.") %>%
-  dySeries("lif", drawPoints = TRUE, pointSize = 3, color = "green", label = "Outliers Inf.") %>%
+  dySeries("uif2", drawPoints = TRUE, pointSize = 3, color = "orange", label = "Outliers Sup.") %>%
+  dySeries("lif2", drawPoints = TRUE, pointSize = 3, color = "green", label = "Outliers Inf.") %>%
   dyRangeSelector()
 
 
@@ -297,68 +297,355 @@ dygraph(CH2_d, main = "Detecção de outliers CH2 (0 a 40 segundos)") %>%
 
 ```{r}
 
-# F
+# Função  para interpolação linear
+interpLinear <- function(x0,y0,x1,y1,x){
+  y <- y0 + (y1-y0) * (x-x0) / (x1-x0)
+  return(y)
+}
+
+# Retirando descontinuidades p/ CH1
+
+desc <- sort(c(which(is.na(CH1_d$LIF) == FALSE, arr.ind = TRUE), which(is.na(CH1_d$UIF) == FALSE, arr.ind = TRUE)))
+
+CH1_desc <- list(desc = desc, tseg = CH1_d$time[desc], CH1 = CH1_d$Amplitude[desc])
+
+# Parâmetros para interpolação
+
+x0 <- CH1_d$time[CH1_desc$desc - 1]
+y0 <- CH1_d$Amplitude[CH1_desc$desc - 1]
+x1 <- CH1_d$time[CH1_desc$desc + 1]
+y1 <- CH1_d$Amplitude[CH1_desc$desc + 1]
+x <- CH1_d$time[CH1_desc$desc]
+y <- interpLinear(x0,y0,x1,y1,x)
+
+# Plot da interpolação
+CH1_d$interp <- NA
+CH1_d$interp[CH1_desc$desc] <- y
+grafico <- ggplot(CH1_d, aes(x = time, y = Amplitude)) +
+  geom_line(color = "blue") +
+  geom_point(aes(y = uif), color = "orange") +
+  geom_point(aes(y = lif), color = "red") +
+  labs(title = "Sinal CH1 com descontinuidade") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+grafico
+
+```
+```{r}
+
+# Plot sinal interpolado
+
+grafico2 <- ggplot(CH1_d, aes(x = time, y = Amplitude)) +
+  geom_line(color = "brown") +
+  geom_point(aes(y = uif), color = "blue") +
+  geom_point(aes(y = lif), color = "yellow") +
+  geom_point(aes(y = interp), color = "black") +
+  labs(title = "Sinal CH1 sem descontinuidade") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+grafico2
+
+```
+```{r}
+
+# processo de retirar descontinuidades para CH2
+descontinuidades_2 <- sort(c(which(is.na(CH2_d$LIF_2)==FALSE,arr.ind = TRUE), which(is.na(CH2_d$UIF_2)==FALSE,arr.ind = TRUE)))
+
+CH2_desc <- list(descontinuidades_2=descontinuidades_2,tseg=CH2_d$time[descontinuidades_2],CH2=CH2_d$Amplitude[descontinuidades_2])
+
+#parametros da interpolação
+x0 <- CH2_d$time[CH2_desc$descontinuidades_2 - 1]
+y0 <- CH2_d$Amplitude[CH2_desc$descontinuidades_2-1]
+x1 <- CH2_d$time[CH2_desc$descontinuidades_2+1]
+y1 <- CH2_d$Amplitude[CH2_desc$descontinuidades_2+1]
+x <- CH2_d$time[CH2_desc$descontinuidades_2] # tempo em que houve a ocorrência de uma descontinuidade
+y <- interpLinear(x0,y0,x1,y1,x)
+
+# plot para sinal com descontinuidade
+CH2_d$interp <- NA
+CH2_d$interp[CH2_desc$descontinuidades_2]<-y
+
+gg1_2 <- ggplot(CH2_d, aes(x = time,y = Amplitude)) +
+  geom_line(color="blue")+
+  geom_point(aes(y = uif2), color = "red") +
+  geom_point(aes(y = lif2), color = "black") +
+  labs(title = "Sinal CH2 com descontinuidade") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+gg1_2
 
 ```
 
+```{r}
+
+# Plot para o sinal sem descontinuidade
+
+grafico2_2 <- ggplot(CH2_d, aes(x = time, y = Amplitude)) +
+  geom_line(color = "red") +
+  geom_point(aes(y = uif2), color = "blue") +
+  geom_point(aes(y = lif2), color = "black") +
+  geom_point(aes(y = interp), color = "orange") +
+  labs(title = "Sinal CH2 sem descontinuidade") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+grafico2_2
+
+```
+
+<!-- Letra F -->
+
+> Os sinais apresentados nos canais 1 e 2 são de tempo e valores contínuos. Essa afirmação é verdadeira ou falsa? Justifique.
+
+Como se observa nos gráficos da Letra D, há descontinuidades nos sinais o que pode levar a crer que os sinais podem não ser contínuos. Portanto, pode-se considerar isso como uma forte evidência de que os mesmos não são contínuos.
+
+<!-- Letra G -->
+
+O link não está disponível para acesso professor Adriano.
+
+\newpage
+\section*{Questão 2}
 
 
+> Considerando os dados disponíveis no arquivo MODULO5.xlsx, disponível na plataforma Moodle, gere um painel com os seguintes gráficos: sinais EMG1 e EMG2, boxplot dos sinais EMG1 e EMG2, histograma e densidade (sobprepostas) para os sinais EMG1 e EMG2. O resultado deve ser apresentado conforme mostrado na Figura 1.
 
+```{r}
 
+library(ggplot2)
+library(patchwork)
 
+# Criar dataframes para EMG1 e EMG2
+EMG1 <- data.frame(sinal = a$chan.1, t = a$time, group = "EMG1")
+EMG2 <- data.frame(sinal = a$chan.2, t = a$time, group = "EMG2")
 
+# Combinar os dois dataframes
+EMG <- rbind(EMG1, EMG2)
 
+# Plot dos sinais
+g_emg <- ggplot(EMG, aes(x = t, y = sinal)) +
+  geom_line() +
+  facet_wrap(~ group, ncol = 1) +
+  xlab("Tempo (s)") +
+  ylab("Amplitude")
 
+# Boxplot dos sinais
+box <- ggplot(EMG, aes(x = group, y = sinal)) +
+  geom_boxplot(notch = TRUE, coef = 1, varwidth = TRUE) +
+  xlab("Sinal") +
+  ylab("Amplitude")
 
+# Histograma e densidade
 
+hist_dens <- ggplot(EMG, aes(sinal)) +
+  geom_histogram(binwidth = 0.5, fill = "black", color = "grey") +
+  geom_density(fill = "black", color = "grey") +
+  facet_wrap(~ group, ncol = 1) +
+  xlab("Amplitude") +
+  ylab("Densidade")
 
+g_emg / (box | hist_dens) 
 
+```
 
+\newpage
+\section*{Questão 3}
 
+<!-- Letra A -->
 
+>  Considerando os dados disponíveis no arquivo MODULO5.xlsx, disponível na plataforma Moodle, gere um gráfico de uma coluna e três linhas que apresente as seguintes informações: sinal EMG1, o valor p da estatística turning point e a estatística turning point. As estatísticas devem ser calculadas utilizando uma janela retangular, sem sobreposição, de 100 ms. Os resultados devem ser apresentados conforme modelo na Figura 2.
 
+```{r}
 
+IndicesTP <- function(x){
+  dif_traj <- diff(sign(diff(x, na.pad = FALSE)))
+  
+  pontos_maxloc = function(i){
+  if(all(x[c(i, i+2)] < x[i+1]))
+    return(i+1)
+  else
+    return(numeric(0))
+  }
+  
+  pontos_minloc = function(i){
+    if(all(x[c(i, i+2)] > x[i+1]))
+      return(i+1)
+    else
+      return(numeric(0))
+  }
+  
+  maxloc <- sapply(which(dif_traj < 0), pontos_maxloc)
+  maxloc <- unlist(maxloc)
+  
+  minloc <- sapply(which(dif_traj > 0), pontos_minloc)
+  minloc <- unlist(minloc)
+  
+  turning_points <- sort(c(maxloc, minloc))
+  
+  if(length(turning_points) > 0)
+    return(turning_points)
+  else
+    return(print("Turning points inexistentes"))
+}
 
+a <- CH1$Amplitude
+itp <- IndicesTP(a)
 
+tpt <- function(ntp, df){
+  tp <- length(ntp)
+  n <- length(a)
+  mu <- 2*(n-2)/3
+  sigma <- sqrt((16*n-29)/90)
+  T <- (tp-mu)/sigma
+  
+  return(T)
+}
 
+tpt(itp,a)
+```
+```{r}
 
+library(spgs)
 
+# Turning point teste
+x <- turningpoint.test(a) 
 
+pvalue <- numeric(0)
+statT <- numeric(0)
+i <- 1
+j <- 1
+while ((i + 100) <= length(CH1$time)){
+  
+  r <- turningpoint.test(CH1$Amplitude[i:(i+100)])
+  pvalue[j] <- r$p.value
+  statT[j] <- r$statistic
+  
+  i <- i + 100
+  j <- j + 1
+}
 
+#vetor de tempo edf para pvalue
+tp <- seq(1, length(pvalue))
+p <- data.frame(x = tp, y = pvalue, categoria = "pvalue")
 
+# vetor de tempo e df para statT
+ts <- seq(1, length(statT))
+s <- data.frame(x = ts, y = statT, categoria = "statT")
 
+# df para o sinal EMG1
 
+emgg <- data.frame(x = CH1$time, y = CH1$Amplitude, categoria = "EMG1")
+all <- rbind(emgg, p, s)
 
+# Plot
 
+graph <- ggplot(all, aes(x = x, y = y)) +
+  geom_line() +
+  facet_wrap(~ categoria, scales = "free_y", ncol = 1) +
+  labs(x = "Tempo (s)",
+       y = "Valor") +
+  xlim(0,375)
 
+graph
 
+```
 
+<!-- Letra B -->
 
+> O turning point indica se ocorre uma mudança significativa no sinal. Dessa forma, a interpretação do teste aplicado no item "a" possibilita avaliar a independência estatística de uma série temporal, comparando a quantidade de turning points observada na série com a quantidade esperada em uma série iid.
 
+\newpage
+\section*{Questão 4}
 
+<!-- Letra A -->
 
+> Considerando os dados disponíveis no arquivo MODULO5.xlsx, disponível na plataforma Moodle, crie um sinal modulado em amplitude com a mesma duração do sinal EMG1. Introduza ruído no início e final do sinal modulado, de forma a coincidir com os períodos em que não há contração muscular. Gere um gráfico de uma coluna e três linhas que apresente as seguintes informações: sinal modulado, o valor p da estatística turning point e a estatística turning point. As estatísticas devem ser calculadas utilizando uma janela retangular, sem sobreposição, de 100 ms. Os resultados devem ser apresentados conforme modelo na Figura 2.
 
+```{r}
 
+library(tuneR)
 
+# Criação de sinal simulado
 
+t <- CH1$time
 
+fs <- 1/0.001
 
+a_ <- sin(2*pi*fs*t)
+sinal_sim <- data.frame(t = t, sinal = a_)
+tf <- t[length(t)]
 
+# Adição de ruído
+duracao_inicio <- 34
 
+ruido_inicio <- noise(kind = "white", samp.rate = fs, duration = duracao_inicio, xunit = "time")@left
 
+# rudio branco (334 a 349.59 segundos)
+duracao_final <- 349.59 - 344
+ruido_final <- noise(kind = "white", samp.rate = fs, duration = duracao_inicio, xunit = "time")@left
 
+# Insere ruído inicio
+for (i in seq(1:length(t))){
+  if(all((t[i] >= 0) & (t[i] <= 34))){
+    sinal_sim$sinal[i] <- ruido_inicio[i]
+  }
+}
 
+# Insere ruido final
+j <- 334001
+k <- 1
 
+while (j <= length(t)){
+  if(all((t[j] >= 344) & (t[j] <= 349.379))){
+    sinal_simulado$sinal[j] <- ruido_final[k]
+  }
+  j <= j + 1
+  k <- k + 1
+}
 
+# Array para guardar vetores pvalue e statT
+pvalue <- numeric(0)
+statT <- numeric(0)
 
+i <- 1
+j <- 1
+while((i + 100) <= length(sinal_simulado$t)){
+  
+# Faz o turningpoint.test para as janelas 
+  r <- turningpoint.test(CH1$Amplitude[i:(i + 100)])
+  pvalue[j] <- r$p.value
+  statT[j] <- r$statistic
+  
+  i <- i + 100
+  j <- j + 1
+}
 
+# Vetor tempo e df para o pvalue
 
+tp <- seq(1, length(pvalue))
+p <- data.frame(x = tp, y = pvalue, categoria = "pvalue")
 
+# vetor tempo e df p/ statT
 
+ts <- seq(1, length(statT))
+s <- data.frame(x = ts, y = statT, categoria = "statT")
 
+# dataframe p/ sinal simulado
+emgg <- data.frame(x = sinal_sim$t, y = sinal_sim$sinal, categorial = "EMG simulado")
 
+all2 <- rbind(emgg, p, s)
 
+# Plotagem gráfico
 
+plot <- ggplot(all2, aes(x = x, y = y)) +
+  geom_line() +
+  facet_wrap(~ categoria, scales = "free_y", ncol = 1) +
+  labs(x = "Tempo (s)",
+       y = "Valor") +
+  xlim(0,375)
 
+plot
 
+```
 
