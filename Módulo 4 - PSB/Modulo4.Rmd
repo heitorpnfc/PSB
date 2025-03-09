@@ -45,42 +45,29 @@ desvio padrão unitário. Considerando essas informações você deve:
 ```{r}
 
 library(pracma)
-library(tidyverse)
+library(ggplot2)
+library(dplyr)
 
-# Frequência de amostragem
-fs <- 1000
+fs1 <- 1000
+dt1 <- 1/fs1
+tempo <- seq(0, 30, by = dt1)
 
-dt <- 1/fs
+media1 <- 0.8
+desvio_padrao1 <- 1.3
 
-# Vetor de tempo "t"
-t <- seq(from = 0, to = 30, by = dt)
+# Gerando ruído com distribuição normal
+ruido1 <- randn(length(tempo), 1)
+EMG1 <- media1 + desvio_padrao1 * ruido1
 
-# Média desejada
-media <- 0.8
+dados_EMG1 <- data.frame(Tempo = tempo, Amplitude = EMG1)
 
-# Desvio padrão desejado
-desvio_padrao <- 1.3
+grafico_EMG1 <- ggplot(dados_EMG1, aes(x = Tempo, y = Amplitude)) +
+  geom_line(color = "grey") +
+  labs(x = "Tempo (s)", y = "Amplitude do EMG1") +
+  theme_minimal()
 
-# Numero de amostrar
-amostras <- fs * t
-
-# Calculando amplitudes do EMG1 com base na funcao randn()
-amplitudes_ <- randn(n = length(t), m = 1)
-
-amplitudes_EMG1 <- media + desvio_padrao * amplitudes_
-
-# Criando um dataframe para o sinal EMG1
-
-df_EMG1 <- data.frame(Amplitudes = amplitudes_EMG1, t = t)
-
-# Plotando o sinal EMG1 com o ggplot
-
-ggplot_1 <- ggplot2::ggplot(df_EMG1, aes (x = t, y = Amplitudes)) +
-  geom_line() +
-  xlab("Tempo (s)") +
-  ylab("EMG1 simulado")
-
-ggplot_1
+# Exibe o gráfico do EMG1
+grafico_EMG1
 
 ```
 <!-- Letra B -->
@@ -92,40 +79,26 @@ ggplot_1
 library(pracma)
 library(tidyverse)
 
-# Frequência de amostragem
 fs2 <- 300
-
 dt2 <- 1/fs2
+tempo2 <- seq(0, 30, by = dt2)
 
-# Vetor de tempo "t"
-t2 <- seq(from = 0, to = 30, by = dt2)
-
-# Média desejada
 media2 <- 1.8
-
-# Desvio padrão desejado
 desvio_padrao2 <- 0.9
 
-# Numero de amostrar
-amostras2 <- fs2 * t2
+# Gerando ruído para o EMG2
+ruido2 <- randn(length(tempo2), 1)
+EMG2 <- media2 + desvio_padrao2 * ruido2
 
-# Calculando amplitudes do EMG1 com base na funcao randn()
-amplitudes2_ <- randn(n = length(t2), m = 1)
+dados_EMG2 <- data.frame(Tempo = tempo2, Amplitude = EMG2)
 
-amplitudes_EMG2 <- media2 + desvio_padrao2 * amplitudes2_
+grafico_EMG2 <- ggplot(dados_EMG2, aes(x = Tempo, y = Amplitude)) +
+  geom_line(color = "black") +
+  labs(x = "Tempo (s)", y = "Amplitude do EMG2") +
+  theme_minimal()
 
-# Criando um dataframe para o sinal EMG1
-
-df_EMG2 <- data.frame(Amplitudes = amplitudes_EMG2, t = t2)
-
-# Plotando o sinal EMG1 com o ggplot
-
-ggplot_2 <- ggplot2::ggplot(df_EMG2, aes (x = t, y = Amplitudes)) +
-  geom_line() +
-  xlab("Tempo (s)") +
-  ylab("EMG1 simulado")
-
-ggplot_2
+# Exibe o gráfico do EMG2
+grafico_EMG2
 
 ```
 <!-- Letra C -->
@@ -134,34 +107,22 @@ ggplot_2
 
 ```{r}
 
-TempoC <- t2
-
-AmplitudeC <- amplitudes_EMG2
-
-tempo_discreto_desejado <- t
-
-# Criacao do DataFrame contendo a interpolação
-df_c <- data.frame(spline(x = TempoC,
-                        y = AmplitudeC,
-                        xout = tempo_discreto_desejado))
-
+# Realizando interpolação para EMG2
+df_c <- data.frame(spline(x = tempo2, y = EMG2, xout = tempo))
 amplitude_interpolado <- df_c$y
-tempo_do_sinal_interpolado <- df_c$x
 
-# Calcula as amplitudes do EMG3
-amplitudes_EMG3 <- amplitudes_EMG1 + amplitude_interpolado
+# Calculando o EMG3
+EMG3 <- EMG1 + amplitude_interpolado
 
-# Criando o DataFrame para o EMG3
-df_EMG3 <- data.frame(Amplitudes = amplitudes_EMG3, t = t)
+dados_EMG3 <- data.frame(Tempo = tempo, Amplitude = EMG3)
 
-# Cria o ggplot para o EMG3
-ggplot3 <- ggplot2::ggplot(df_EMG3, aes (x = t, y = Amplitudes)) +
-  geom_line() + xlab("Tempo (s)") +
-  ylab("EMG3 simulado")
+grafico_EMG3 <- ggplot(dados_EMG3, aes(x = Tempo, y = Amplitude)) +
+  geom_line(color = "brown") +
+  labs(x = "Tempo (s)", y = "Amplitude do EMG3") +
+  theme_minimal()
 
-# Plota o grafico utilizando o ggplot
-ggplot3
-
+# Exibe o gráfico do EMG3
+grafico_EMG3
 
 ```
 <!-- Letra D -->
@@ -170,62 +131,72 @@ ggplot3
 
 ```{r}
 
+library(ggplot2)
 library(patchwork)
 
-# Boxplot EMG1
-boxplot_EMG1 <- ggplot(df_EMG1, aes(x = factor("EMG1"), y = Amplitudes)) +
+# Boxplot do sinal EMG1
+box_emg1 <- ggplot(dados_EMG1, aes(x = Amplitude)) +
   geom_boxplot() +
-  labs(x = "", y = "Amplitude") 
+  labs(x = "EMG1", y = "Amplitude") +
+  theme_minimal()
 
-# Histograma EMG1
-histograma_EMG1 <- ggplot(df_EMG1, aes(x = Amplitudes)) +
-  geom_histogram(binwidth = 0.5, fill = "orange", color = "black") +
-  labs(title = "EMG1", x = "Amplitude", y = "Frequencia") 
+# Histograma do sinal EMG1
+hist_emg1 <- ggplot(dados_EMG1, aes(x = Amplitude)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "black") +
+  labs(title = "EMG1", x = "Amplitude", y = "Frequência") +
+  theme_minimal()
 
-# Densidade EMG1
-densidade_EMG1 <- ggplot(df_EMG1, aes(x = Amplitudes)) +
-  geom_density(fill = "orange", color = "black") +
-  labs(title = "EMG1", x = "Amplitude", y = "Densidade")
+# Densidade do sinal EMG1
+densid_emg1 <- ggplot(dados_EMG1, aes(x = Amplitude)) +
+  geom_density(fill = "blue", color = "black") +
+  labs(title = "EMG1", x = "Amplitude", y = "Densidade") +
+  theme_minimal()
 
-# Boxplot EMG2
-boxplot_EMG2 <- ggplot(df_EMG2, aes(x = factor("EMG2"), y = Amplitudes)) +
+# Boxplot do sinal EMG2
+box_emg2 <- ggplot(dados_EMG2, aes(x = Amplitude)) +
   geom_boxplot() +
-  labs(x = "", y = "Amplitude") 
+  labs(x = "EMG2", y = "Amplitude") +
+  theme_minimal()
 
-# Histograma EMG2
-histograma_EMG2 <- ggplot(df_EMG2, aes(x = Amplitudes)) +
-  geom_histogram(binwidth = 0.5, fill = "red", color = "black") +
-  labs(title = "EMG2", x = "Amplitude", y = "Frequencia") 
+# Histograma do sinal EMG2
+hist_emg2 <- ggplot(dados_EMG2, aes(x = Amplitude)) +
+  geom_histogram(binwidth = 0.5, fill = "purple", color = "black") +
+  labs(title = "EMG2", x = "Amplitude", y = "Frequência") +
+  theme_minimal()
 
-# Densidade EMG2
-densidade_EMG2 <- ggplot(df_EMG2, aes(x = Amplitudes)) +
-  geom_density(fill = "red", color = "black") +
-  labs(title = "EMG2", x = "Amplitude", y = "Densidade")
+# Densidade do sinal EMG2
+densid_emg2 <- ggplot(dados_EMG2, aes(x = Amplitude)) +
+  geom_density(fill = "purple", color = "black") +
+  labs(title = "EMG2", x = "Amplitude", y = "Densidade") +
+  theme_minimal()
 
-# Boxplot EMG3
-boxplot_EMG3 <- ggplot(df_EMG3, aes(x = factor("EMG3"), y = Amplitudes)) +
+# Boxplot do sinal EMG3
+box_emg3 <- ggplot(dados_EMG3, aes(x = Amplitude)) +
   geom_boxplot() +
-  labs(x = "", y = "Amplitude") 
+  labs(x = "EMG3", y = "Amplitude") +
+  theme_minimal()
 
-# Histograma EMG3
-histograma_EMG3 <- ggplot(df_EMG3, aes(x = Amplitudes)) +
-  geom_histogram(binwidth = 0.5, fill = "green", color = "black") +
-  labs(title = "EMG3", x = "Amplitude", y = "Frequencia")
+# Histograma do sinal EMG3
+hist_emg3 <- ggplot(dados_EMG3, aes(x = Amplitude)) +
+  geom_histogram(binwidth = 0.5, fill = "pink", color = "black") +
+  labs(title = "EMG3", x = "Amplitude", y = "Frequência") +
+  theme_minimal()
 
-# Densidade EMG3
-densidade_EMG3 <- ggplot(df_EMG3, aes(x = Amplitudes)) +
-  geom_density(fill = "green", color = "black") +
-  labs(title = "EMG3", x = "Amplitude", y = "Densidade")
+# Densidade do sinal EMG3
+densid_emg3 <- ggplot(dados_EMG3, aes(x = Amplitude)) +
+  geom_density(fill = "pink", color = "black") +
+  labs(title = "EMG3", x = "Amplitude", y = "Densidade") +
+  theme_minimal()
 
-# Mostrando a tabela 
-(boxplot_EMG1 | histograma_EMG1 | densidade_EMG1) /
-(boxplot_EMG2 | histograma_EMG2 | densidade_EMG2) /
-(boxplot_EMG3 | histograma_EMG3 | densidade_EMG3)
+# Combinando os gráficos em um painel
+(box_emg1 | hist_emg1 | densid_emg1) /
+(box_emg2 | hist_emg2 | densid_emg2) /
+(box_emg3 | hist_emg3 | densid_emg3)
+
 
 ```
 
-> Calcular a média, desvio padrão, variância, coeficiente de assimetria e curtose dos sinais 
-EMG1, EMG2 e EMG3. Os resultados devem ser apresentados com três casas decimais.
+> Calcular a média, desvio padrão, variância, coeficiente de assimetria e curtose dos sinais EMG1, EMG2 e EMG3. Os resultados devem ser apresentados com três casas decimais.
 
 ```{r}
 
@@ -233,70 +204,66 @@ library(kableExtra)
 library(e1071)
 library(dplyr)
 
-# Calculando a media com a funcao mean()
-media_EMG1 <- mean(df_EMG1$Amplitudes)
-media_EMG2 <- mean(df_EMG2$Amplitudes)
-media_EMG3 <- mean(df_EMG3$Amplitudes)
+# Calculando a média com a função mean()
+media_EMG1 <- mean(dados_EMG1$Amplitudes)
+media_EMG2 <- mean(dados_EMG2$Amplitudes)
+media_EMG3 <- mean(dados_EMG3$Amplitudes)
 
 # Arredondando o resultado para 3 casas decimais
-
 media_EMG1_3 <- round(media_EMG1, 3)
 media_EMG2_3 <- round(media_EMG2, 3)
 media_EMG3_3 <- round(media_EMG3, 3)
 
-# Calculando o desvio padrao
-dp_EMG1 <- sd(df_EMG1$Amplitudes)
-dp_EMG2 <- sd(df_EMG2$Amplitudes)
-dp_EMG3 <- sd(df_EMG3$Amplitudes)
+# Calculando o desvio padrão
+dp_EMG1 <- sd(dados_EMG1$Amplitudes)
+dp_EMG2 <- sd(dados_EMG2$Amplitudes)
+dp_EMG3 <- sd(dados_EMG3$Amplitudes)
 
-# Arrendondando o resultado para 3 casas decimais
+# Arredondando o resultado para 3 casas decimais
 dp_EMG1_3 <- round(dp_EMG1, 3)
 dp_EMG2_3 <- round(dp_EMG2, 3)
 dp_EMG3_3 <- round(dp_EMG3, 3)
 
-# Calculando a variancia
-v_EMG1 <- var(df_EMG1$Amplitudes)
-v_EMG2 <- var(df_EMG2$Amplitudes)
-v_EMG3 <- var(df_EMG3$Amplitudes)
+# Calculando a variância
+v_EMG1 <- var(dados_EMG1$Amplitude)
+v_EMG2 <- var(dados_EMG2$Amplitude)
+v_EMG3 <- var(dados_EMG3$Amplitude)
 
-# Arredondando resultado para 3 casas decimais
+# Arredondando o resultado para 3 casas decimais
 v_EMG1_3 <- round(v_EMG1, 3)
 v_EMG2_3 <- round(v_EMG2, 3)
 v_EMG3_3 <- round(v_EMG3, 3)
 
-# Calculando o coeficiente de assimetria 
-coefassim_EMG1 <- skewness(df_EMG1$Amplitudes)
-coefassim_EMG2 <- skewness(df_EMG2$Amplitudes)
-coefassim_EMG3 <- skewness(df_EMG3$Amplitudes)
+# Calculando o coeficiente de assimetria
+coefassim_EMG1 <- skewness(dados_EMG1$Amplitude)
+coefassim_EMG2 <- skewness(dados_EMG2$Amplitude)
+coefassim_EMG3 <- skewness(dados_EMG3$Amplitude)
 
 # Arredondando resultado para 3 casas decimais
 coefassim_EMG1_3 <- round(coefassim_EMG1, 3)
 coefassim_EMG2_3 <- round(coefassim_EMG2, 3)
 coefassim_EMG3_3 <- round(coefassim_EMG3, 3)
 
-# Calculando o curtose
-curt_EMG1 <- kurtosis(df_EMG1$Amplitudes)
-curt_EMG2 <- kurtosis(df_EMG2$Amplitudes)
-curt_EMG3 <- kurtosis(df_EMG3$Amplitudes)
+# Calculando a curtose
+curt_EMG1 <- kurtosis(dados_EMG1$Amplitude)
+curt_EMG2 <- kurtosis(dados_EMG2$Amplitude)
+curt_EMG3 <- kurtosis(dados_EMG3$Amplitude)
 
 # Arredondando resultado para 3 casas decimais
 curt_EMG1_3 <- round(curt_EMG1, 3)
 curt_EMG2_3 <- round(curt_EMG2, 3)
 curt_EMG3_3 <- round(curt_EMG3, 3)
 
-# Criando um dataframe
+# Criando um dataframe com os resultados
+df <- data.frame(sinais = c("EMG1", "EMG2", "EMG3"),
+                 mean = c(media_EMG1_3, media_EMG2_3, media_EMG3_3),
+                 dp = c(dp_EMG1_3, dp_EMG2_3, dp_EMG3_3),
+                 var = c(v_EMG1_3, v_EMG2_3, v_EMG3_3),
+                 ca = c(coefassim_EMG1_3, coefassim_EMG2_3, coefassim_EMG3_3),
+                 curtose = c(curt_EMG1_3, curt_EMG2_3, curt_EMG3_3))
 
-df <- data.frame( sinais = c("EMG1", "EMG2", "EMG3"),
-                  mean = c(media_EMG1_3, media_EMG2_3, media_EMG3_3),
-                  dp = c(dp_EMG1_3, dp_EMG2_3, dp_EMG3_3),
-                  var = c(v_EMG1_3, v_EMG2_3, v_EMG3_3),
-                  ca = c(coefassim_EMG1_3, coefassim_EMG2_3, coefassim_EMG3_3),
-                  curtose = c(curt_EMG1_3, curt_EMG2_3, curt_EMG3_3))
-
+# Exibindo o dataframe formatado com kableExtra
 df %>% kbl() %>% kable_styling()
-
-
-
 
 
 ```
@@ -400,7 +367,7 @@ Faça a estimativa de parâmetros estatísticos dos sinais eletromiográficos di
 library(dygraphs)
 library(tidyverse)
 
-dadosm4 <- read.table("C:/Users/heito/Desktop/Módulo 4 - PSB/DadosM4-1.txt", header = FALSE, sep =  " ", skip = 6)
+dadosm4 <- read.table("E:/GitHub/PSB/Módulo 4 - PSB/DadosM4-1.txt", header = FALSE, sep =  " ", skip = 6)
 
 # Alterando o nome das variávesi do df
 
