@@ -1,12 +1,13 @@
 ---
-title: " "
-author: " "
-date: " "
+title: "Modulo 4"
+author: "Heitor Pereira Nunes F. Cunha - 12111EBI027"
+date: "Uberlândia - UFU"
 output: 
   pdf_document:
     highlight: tango
   html_document:
-    df_print: paged
+    highlight: tango
+    includes:
 always_allow_html: true
 ---
 
@@ -379,10 +380,16 @@ tempo <- seq(0, dt * (nrow(dados) - 1), by = dt)
 
 # Adicionando o vetor de tempo ao data frame
 dados <- cbind(time = tempo, dados)
+limite_90 <- 0.9 * max(dados$AccY, na.rm = TRUE) * 1.1
 
 # Plotando o gráfico de AccY
-dygraph(dados[c("time", "AccY")], main = "Aceleração no Eixo Y (AccY)", group = "AccYGroup") %>%
-  dyRangeSelector()
+ggplot(dados, aes(x = time, y = AccY)) +
+  geom_line(color = "blue") +
+  geom_hline(yintercept = limite_90, color = "red", linetype = "dashed", size = 1) +
+  labs(title = "Aceleração no Eixo Y (AccY)",
+       x = "Tempo (s)",
+       y = "AccY") +
+  theme_minimal()
 
 ```
 
@@ -464,8 +471,8 @@ resultados
 
 ```{r}
 
-# Seleção do sinal de interesse (músculo posterior)
-sinal <- dados$MuscPosterior  
+# Seleção do sinal de interesse (músculo anterior)
+sinal <- dados$MuscAnterior  
 
 # Definindo o tamanho da janela (em número de amostras)
 janela_size <- 500  
@@ -489,8 +496,11 @@ for (i in 1:(num_janelas - 1)) {
 }
 
 # Plotando os resultados usando dygraphs
-dygraph(mediana_resultados, main = "Variação da Mediana do Sinal Posterior ao Longo do Tempo", group = "MedianaTimeGroup") %>%
-  dyRangeSelector()
-
+ggplot(mediana_resultados, aes(x = time, y = mediana)) +
+  geom_line(color = "blue") +
+  labs(title = "Variação da Mediana do Sinal Anterior ao Longo do Tempo",
+       x = "Tempo (s)",
+       y = "Mediana do Sinal") +
+  theme_minimal()
 
 ```
