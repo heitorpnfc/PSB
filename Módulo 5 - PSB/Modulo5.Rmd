@@ -43,66 +43,66 @@ Uberlândia, MG\\
 
 ```{r}
 
-# Carregando bibliotecas
+# Carregar pacotes necessários
 library(readxl)
 library(dygraphs)
 library(tidyverse)
 
-# Carregando os dados
-a <- read_xlsx("C:/Users/heito/Documents/GitHub/PSB/Módulo 5 - PSB/MODULO5.xlsx")
+# Importar os dados
+dados <- read_xlsx("C:/Users/heito/Documents/GitHub/PSB/Módulo 5 - PSB/MODULO5.xlsx")
 
-# Criando o dataframe para CH1
-CH1 <- data.frame(time = a$time, Amplitude = a$chan.1)
+# Construção do dataframe para CH1
+CH1_df <- tibble(Tempo = dados$time, Amplitude = dados$chan.1)
 
-# Observando o sinal de 0 a 14 segundos
-ggplot_CH1 <- dygraph(CH1, main = "Sinal CH1") %>% 
+# Visualização do sinal entre 0 e 14 segundos
+grafico_CH1 <- dygraph(CH1_df, main = "Sinal CH1") %>% 
   dyRangeSelector(dateWindow = c(0, 14))
 
-# Sinal completo
-ggplot_CH1_comp <- dygraph(CH1, main = "Sinal CH1") %>% 
+# Visualização do sinal completo
+grafico_CH1_completo <- dygraph(CH1_df, main = "Sinal CH1 Completo") %>% 
   dyRangeSelector()
 
-# Função para cálculo do RMS
-rms <- function(x) {
-  x <- na.omit(x) # Removendo valores NA
-  sqrt(mean(x^2))
+# Definição da função para cálculo do valor RMS
+calcula_rms <- function(vetor) {
+  vetor <- na.omit(vetor) # Removendo valores ausentes
+  sqrt(mean(vetor^2))
 }
 
-# Cálculo do RMS para CH1
-CH1_ruidoso <- subset(CH1, time <= 14)
-CH1_rms_ruidoso <- rms(CH1_ruidoso$Amplitude)
+# Cálculo do RMS para o sinal CH1
+CH1_filtrado <- CH1_df %>% filter(Tempo <= 14)
+CH1_rms_filtrado <- calcula_rms(CH1_filtrado$Amplitude)
 
-rms_CH1 <- rms(CH1$Amplitude)
+rms_total_CH1 <- calcula_rms(CH1_df$Amplitude)
 
-# Relação sinal-ruído para CH1
-Sinalruido_CH1 <- 20 * log10(rms_CH1 / CH1_rms_ruidoso)
-Sinalruido_CH1
+# Cálculo da relação sinal-ruído (SNR) para CH1
+snr_CH1 <- 20 * log10(rms_total_CH1 / CH1_rms_filtrado)
+snr_CH1
 
 ```
 ```{r}
 
-# Repetindo o processo para o canal CH2
+# Processamento do canal CH2
 
-# Criando o dataframe para CH2
-CH2 <- data.frame(time = a$time, Amplitude = a$chan.2)
+# Construindo o dataframe para CH2
+dados_CH2 <- data.frame(tempo = dados$time, valor = dados$chan.2)
 
-# Observando o sinal de 0 a 14 segundos
-ggplot_CH2 <- dygraph(CH2, main = "Sinal CH2") %>% 
+# Visualizando o sinal entre 0 e 14 segundos
+grafico_CH2 <- dygraph(dados_CH2, main = "Sinal do Canal CH2") %>% 
   dyRangeSelector(dateWindow = c(0, 14))
 
-# Sinal completo
-ggplot_CH2_comp <- dygraph(CH2, main = "Sinal CH2") %>% 
+# Exibindo o sinal completo
+grafico_CH2_completo <- dygraph(dados_CH2, main = "Sinal do Canal CH2") %>% 
   dyRangeSelector()
 
 # Cálculo do RMS para CH2
-CH2_ruidoso <- subset(CH2, time <= 14)
-CH2_rms_ruidoso <- rms(CH2_ruidoso$Amplitude)
+sinal_CH2_recortado <- filter(dados_CH2, tempo <= 14)
+rms_CH2_recortado <- calcula_rms(sinal_CH2_recortado$valor)
 
-rms_CH2 <- rms(CH2$Amplitude)
+rms_total_CH2 <- calcula_rms(dados_CH2$valor)
 
-# Relação sinal-ruído para CH2
-Sinalruido_CH2 <- 20 * log10(rms_CH2 / CH2_rms_ruidoso)
-Sinalruido_CH2
+# Determinação da relação sinal-ruído para CH2
+snr_CH2 <- 20 * log10(rms_total_CH2 / rms_CH2_recortado)
+snr_CH2
 
 ```
 <!-- Letra B -->
@@ -111,34 +111,32 @@ Sinalruido_CH2
 
 ```{r}
 
-# Ruido 1 em CH1_ruidoso
+# Análise de ruído no canal CH1
 
-ruido1_CH1 <- CH1_ruidoso
-ruido2_CH1 <- subset(CH1, time >= 18 & time <= 43)
+ruido_CH1_parte1 <- CH1_filtrado
+ruido_CH1_parte2 <- CH1_df %>% filter(Tempo >= 18 & Tempo <= 43)
 
-rms_ruido1_CH1 <- rms(ruido1_CH1$Amplitude)
-rms_ruido2_CH1 <- rms(ruido2_CH1$Amplitude)
+rms_ruido_parte1_CH1 <- calcula_rms(ruido_CH1_parte1$Amplitude)
+rms_ruido_parte2_CH1 <- calcula_rms(ruido_CH1_parte2$Amplitude)
 
-# Relação ruido p/ CH1
-
-SNR_ruido_CH1 <- 20*log10(rms_ruido2_CH1/rms_ruido1_CH1)
-SNR_ruido_CH1
+# Cálculo da relação entre ruídos para CH1
+snr_ruido_CH1 <- 20 * log10(rms_ruido_parte2_CH1 / rms_ruido_parte1_CH1)
+snr_ruido_CH1
 
 ```
 ```{r}
 
-# Repetindo o processo para o CH2
+# Análise de ruído no canal CH2
 
-# Ruído 1 em CH2_ruidoso
-ruido1_CH2 <- CH2_ruidoso
-ruido2_CH2 <- subset(CH2, time >= 18 & time <= 43)
+ruido_CH2_parte1 <- sinal_CH2_recortado
+ruido_CH2_parte2 <- dados_CH2 %>% filter(tempo >= 18 & tempo <= 43)
 
-rms_ruido1_CH2 <- rms(ruido1_CH2$Amplitude)
-rms_ruido2_CH2 <- rms(ruido2_CH2$Amplitude)
+rms_ruido_parte1_CH2 <- calcula_rms(ruido_CH2_parte1$valor)
+rms_ruido_parte2_CH2 <- calcula_rms(ruido_CH2_parte2$valor)
 
-# Relação ruido p/ CH1
-SNR_ruidos_CH2 <- 20*log10(rms_ruido2_CH2/rms_ruido1_CH2)
-SNR_ruidos_CH2
+# Cálculo da relação entre ruídos para CH2
+snr_ruido_CH2 <- 20 * log10(rms_ruido_parte2_CH2 / rms_ruido_parte1_CH2)
+snr_ruido_CH2
 
 ```
 > Para cada um dos canais (ch1 e ch2) estimate o valor da tendência linear constante. O cálculo deve ser feito de forma independente para os trechos de ruído 1 e 2, e para o trecho de sinal (de 45 a 334 s).
@@ -147,7 +145,7 @@ SNR_ruidos_CH2
 
 # Selecionando a janela desejada
 
-CH1_c <- subset(CH1, time >= 45 & time <= 334)
+CH1_c <- subset(CH1_df, Tempo >= 45 & Tempo <= 334)
 
 y1 <- min(CH1_c$Amplitude) * (-1) + CH1_c$Amplitude
 
@@ -155,16 +153,20 @@ y1 <- min(CH1_c$Amplitude) * (-1) + CH1_c$Amplitude
 mean(y1)
 
 ```
+
 ```{r}
 
 # Refazendo o processo para CH2
 
-CH2_c <- subset(CH2, time >= 45 & time <= 334)
+# Verificando se a janela contém valores válidos antes do processamento
+if (nrow(dados_CH2) > 0) {
+  sinal_corrigido_CH2 <- abs(min(dados_CH2$valor, na.rm = TRUE)) + dados_CH2$valor
+  tendencia_CH2 <- mean(sinal_corrigido_CH2, na.rm = TRUE)
+} else {
+  tendencia_CH2 <- NA  # Define como NA se a janela estiver vazia
+}
 
-y2 <- min(CH2_c$Amplitude) * (-1) + CH2_c$Amplitude
-
-# Cálculo da tendência linear p/ CH2
-mean(y2)
+tendencia_CH2
 
 ```
 <!-- Letra D -->
@@ -176,8 +178,8 @@ mean(y2)
 library(plotly)
 
 # Selecionando as janelas desejadas
-CH1_d <- subset(CH1, time >= 0 & time <= 40)
-CH2_d <- subset(CH2, time >= 0 & time <= 40)
+CH1_d <- subset(CH1_df, Tempo >= 0 & Tempo <= 40)
+CH2_d <- subset(dados_CH2, tempo >= 0 & tempo <= 40)
 
 # Plotando boxplot p/ CH1
 
@@ -188,9 +190,12 @@ boxplot(CH1_d$Amplitude, main = "Boxplot CH1", ylab = "Amplitude")
 
 ```{r}
 
-# Criando um boxplot para o CH2
-boxplot(CH2_d$Amplitude, main = "Boxplot CH2", ylab = "Amplitude")
+library(ggplot2)
+library(plotly)
 
+CH2_d <- dados_CH2 %>% filter(tempo >= 0 & tempo <= 40) %>% drop_na(valor)
+
+boxplot(CH2_d$valor, main = "Boxplot CH2", ylab = "Amplitude")
 ```
 > Por outro lado, em relação ao boxplot plotado para o CH2, é possível observar valores majoritariamente positivos, se aproximando de 2500. Sendo assim, isso indica a existência de uma descontinuidade entre CH1 e CH2.
 
@@ -204,40 +209,40 @@ boxplot_1$stat
 ```
 ```{r}
 
-# Cálculo da distância interquartil (IQR)
-boxplot_1 <- boxplot.stats(CH1_d$Amplitude) # Obtendo estatísticas do boxplot
+# Determinação da Distância Interquartil (IQR)
+estatisticas_boxplot <- boxplot.stats(CH1_d$Amplitude) # Extraindo estatísticas do boxplot
 
-# Terceiro e primeiro quartis
-quartil3 <- boxplot_1$stats[4]
-quartil1 <- boxplot_1$stats[2]
+# Definição dos quartis
+q3 <- estatisticas_boxplot$stats[4] # Terceiro quartil
+q1 <- estatisticas_boxplot$stats[2] # Primeiro quartil
 
-# Distância interquartil
-iqr <- quartil3 - quartil1
+# Cálculo da IQR
+intervalo_interquartil <- q3 - q1
 
-# Limite para detecção de outliers
-h <- 1.5 * iqr
+# Determinação dos limites para outliers
+margem_outlier <- 1.5 * intervalo_interquartil
 
-# Limiar superior e inferior
-uif <- quartil3 + h
-lif <- quartil1 - h
+# Cálculo dos valores limite
+limite_superior <- q3 + margem_outlier
+limite_inferior <- q1 - margem_outlier
 
-# Criando colunas para marcar outliers
-CH1_d$uif <- NA
-CH1_d$lif <- NA
+# Criando colunas para destacar outliers
+CH1_d$acima_limite <- NA
+CH1_d$abaixo_limite <- NA
 
-# Identificando índices dos outliers superiores e inferiores
-indexUIF <- which(CH1_d$Amplitude > uif)
-indexLIF <- which(CH1_d$Amplitude < lif)
+# Identificação dos índices de valores extremos
+indices_sup <- which(CH1_d$Amplitude > limite_superior)
+indices_inf <- which(CH1_d$Amplitude < limite_inferior)
 
-# Marcando outliers nas colunas correspondentes
-CH1_d$uif[indexUIF] <- CH1_d$Amplitude[indexUIF]
-CH1_d$lif[indexLIF] <- CH1_d$Amplitude[indexLIF]
+# Atribuindo os valores outliers às colunas correspondentes
+CH1_d$acima_limite[indices_sup] <- CH1_d$Amplitude[indices_sup]
+CH1_d$abaixo_limite[indices_inf] <- CH1_d$Amplitude[indices_inf]
 
-# Plotagem com dygraph
-dygraph(CH1_d, main = "Detecção de outliers CH1 (0 a 40 segundos)") %>%
+# Visualização dos outliers com dygraph
+dygraph(CH1_d, main = "Identificação de Outliers no CH1 (0 a 40 segundos)") %>%
   dySeries("Amplitude", label = "Sinal Original") %>%
-  dySeries("uif", drawPoints = TRUE, pointSize = 3, color = "orange", label = "Outliers Sup.") %>%
-  dySeries("lif", drawPoints = TRUE, pointSize = 3, color = "green", label = "Outliers Inf.") %>%
+  dySeries("acima_limite", drawPoints = TRUE, pointSize = 3, color = "red", label = "Outliers Sup.") %>%
+  dySeries("abaixo_limite", drawPoints = TRUE, pointSize = 3, color = "blue", label = "Outliers Inf.") %>%
   dyRangeSelector()
 
 ```
@@ -245,15 +250,15 @@ dygraph(CH1_d, main = "Detecção de outliers CH1 (0 a 40 segundos)") %>%
 ```{r}
 
 # Detecção de descontinuidade CH2
-index2 <- which(CH2_d$Amplitude != 0)
-boxplot_2 <- boxplot(CH2_d$Amplitude[index2], plot = FALSE)
+index2 <- which(CH2_d$valor != 0)
+boxplot_2 <- boxplot(CH2_d$valor[index2], plot = FALSE)
 boxplot_2$stat
 
 ```
 ```{r}
 
 # Cálculo da distância interquartil (IQR)
-boxplot_2 <- boxplot.stats(CH2_d$Amplitude) # Obtendo estatísticas do boxplot
+boxplot_2 <- boxplot.stats(CH2_d$valor) # Obtendo estatísticas do boxplot
 
 # Terceiro e primeiro quartis
 quartil3_2 <- boxplot_2$stats[4]
@@ -274,20 +279,19 @@ CH2_d$uif2 <- NA
 CH2_d$lif2 <- NA
 
 # Identificando índices dos outliers superiores e inferiores
-indexUIF2 <- which(CH2_d$Amplitude > uif2)
-indexLIF2 <- which(CH2_d$Amplitude < lif2)
+indexUIF2 <- which(CH2_d$valor > uif2)
+indexLIF2 <- which(CH2_d$valor < lif2)
 
 # Marcando outliers nas colunas correspondentes
-CH2_d$uif2[indexUIF2] <- CH2_d$Amplitude[indexUIF2]
-CH2_d$lif2[indexLIF2] <- CH2_d$Amplitude[indexLIF2]
+CH2_d$uif2[indexUIF2] <- CH2_d$valor[indexUIF2]
+CH2_d$lif2[indexLIF2] <- CH2_d$valor[indexLIF2]
 
 # Plotagem com dygraph
 dygraph(CH2_d, main = "Detecção de outliers CH2 (0 a 40 segundos)") %>%
-  dySeries("Amplitude", label = "Sinal Original") %>%
+  dySeries("valor", label = "Sinal Original") %>%
   dySeries("uif2", drawPoints = TRUE, pointSize = 3, color = "orange", label = "Outliers Sup.") %>%
   dySeries("lif2", drawPoints = TRUE, pointSize = 3, color = "green", label = "Outliers Inf.") %>%
   dyRangeSelector()
-
 
 ```
 
@@ -321,7 +325,7 @@ y <- interpLinear(x0,y0,x1,y1,x)
 # Plot da interpolação
 CH1_d$interp <- NA
 CH1_d$interp[CH1_desc$desc] <- y
-grafico <- ggplot(CH1_d, aes(x = time, y = Amplitude)) +
+grafico <- ggplot(CH1_d, aes(x = Tempo, y = Amplitude)) +
   geom_line(color = "blue") +
   geom_point(aes(y = uif), color = "orange") +
   geom_point(aes(y = lif), color = "red") +
@@ -336,10 +340,10 @@ grafico
 
 # Plot sinal interpolado
 
-grafico2 <- ggplot(CH1_d, aes(x = time, y = Amplitude)) +
+grafico2 <- ggplot(CH1_d, aes(x = Tempo, y = Amplitude)) +
   geom_line(color = "brown") +
   geom_point(aes(y = uif), color = "blue") +
-  geom_point(aes(y = lif), color = "yellow") +
+  geom_point(aes(y = lif), color = "orange") +
   geom_point(aes(y = interp), color = "black") +
   labs(title = "Sinal CH1 sem descontinuidade") +
   theme_minimal() +
@@ -350,24 +354,24 @@ grafico2
 ```
 ```{r}
 
-# processo de retirar descontinuidades para CH2
+# Processo de retirar descontinuidades para CH2
 descontinuidades_2 <- sort(c(which(is.na(CH2_d$LIF_2)==FALSE,arr.ind = TRUE), which(is.na(CH2_d$UIF_2)==FALSE,arr.ind = TRUE)))
 
 CH2_desc <- list(descontinuidades_2=descontinuidades_2,tseg=CH2_d$time[descontinuidades_2],CH2=CH2_d$Amplitude[descontinuidades_2])
 
-#parametros da interpolação
+# Parametros da interpolação
 x0 <- CH2_d$time[CH2_desc$descontinuidades_2 - 1]
 y0 <- CH2_d$Amplitude[CH2_desc$descontinuidades_2-1]
 x1 <- CH2_d$time[CH2_desc$descontinuidades_2+1]
 y1 <- CH2_d$Amplitude[CH2_desc$descontinuidades_2+1]
-x <- CH2_d$time[CH2_desc$descontinuidades_2] # tempo em que houve a ocorrência de uma descontinuidade
+x <- CH2_d$time[CH2_desc$descontinuidades_2]
 y <- interpLinear(x0,y0,x1,y1,x)
 
-# plot para sinal com descontinuidade
+# Plot para sinal com descontinuidade
 CH2_d$interp <- NA
 CH2_d$interp[CH2_desc$descontinuidades_2]<-y
 
-gg1_2 <- ggplot(CH2_d, aes(x = time,y = Amplitude)) +
+gg1_2 <- ggplot(CH2_d, aes(x = tempo,y = valor)) +
   geom_line(color="blue")+
   geom_point(aes(y = uif2), color = "red") +
   geom_point(aes(y = lif2), color = "black") +
@@ -382,7 +386,7 @@ gg1_2
 
 # Plot para o sinal sem descontinuidade
 
-grafico2_2 <- ggplot(CH2_d, aes(x = time, y = Amplitude)) +
+grafico2_2 <- ggplot(CH2_d, aes(x = tempo, y = valor)) +
   geom_line(color = "red") +
   geom_point(aes(y = uif2), color = "blue") +
   geom_point(aes(y = lif2), color = "black") +
@@ -408,7 +412,6 @@ O link não está disponível para acesso professor Adriano.
 \newpage
 \section*{Questão 2}
 
-
 > Considerando os dados disponíveis no arquivo MODULO5.xlsx, disponível na plataforma Moodle, gere um painel com os seguintes gráficos: sinais EMG1 e EMG2, boxplot dos sinais EMG1 e EMG2, histograma e densidade (sobprepostas) para os sinais EMG1 e EMG2. O resultado deve ser apresentado conforme mostrado na Figura 1.
 
 ```{r}
@@ -417,35 +420,45 @@ library(ggplot2)
 library(patchwork)
 
 # Criar dataframes para EMG1 e EMG2
-EMG1 <- data.frame(sinal = a$chan.1, t = a$time, group = "EMG1")
-EMG2 <- data.frame(sinal = a$chan.2, t = a$time, group = "EMG2")
+EMG1 <- data.frame(sinal = dados$chan.1, t = dados$time, group = "EMG1")
+EMG2 <- data.frame(sinal = dados$chan.2, t = dados$time, group = "EMG2")
 
 # Combinar os dois dataframes
 EMG <- rbind(EMG1, EMG2)
 
-# Plot dos sinais
-g_emg <- ggplot(EMG, aes(x = t, y = sinal)) +
-  geom_line() +
-  facet_wrap(~ group, ncol = 1) +
+# Plot dos sinais EMG1 e EMG2
+g_emg <- ggplot(EMG, aes(x = t, y = sinal, color = group)) +
+  geom_line(size = 1) +
+  facet_wrap(~ group, ncol = 1, scales = "free_y") +
   xlab("Tempo (s)") +
-  ylab("Amplitude")
+  ylab("Amplitude") +
+  theme_minimal() +
+  scale_color_manual(values = c("#0072B2", "#D55E00")) +
+  theme(legend.position = "none")
 
 # Boxplot dos sinais
-box <- ggplot(EMG, aes(x = group, y = sinal)) +
-  geom_boxplot(notch = TRUE, coef = 1, varwidth = TRUE) +
+box <- ggplot(EMG, aes(x = group, y = sinal, fill = group)) +
+  geom_boxplot(notch = TRUE, coef = 1, varwidth = TRUE, outlier.color = "red") +
   xlab("Sinal") +
-  ylab("Amplitude")
+  ylab("Amplitude") +
+  scale_fill_manual(values = c("#0072B2", "#D55E00")) +
+  theme_minimal() +
+  theme(legend.position = "none")
 
-# Histograma e densidade
-
-hist_dens <- ggplot(EMG, aes(sinal)) +
-  geom_histogram(binwidth = 0.5, fill = "black", color = "grey") +
-  geom_density(fill = "black", color = "grey") +
-  facet_wrap(~ group, ncol = 1) +
+# Histograma + densidade
+hist_dens <- ggplot(EMG, aes(sinal, fill = group)) +
+  geom_histogram(binwidth = 0.5, alpha = 0.6, position = "identity", color = "white") +
+  geom_density(alpha = 0.4) +
+  facet_wrap(~ group, ncol = 1, scales = "free_y") +
   xlab("Amplitude") +
-  ylab("Densidade")
+  ylab("Densidade") +
+  scale_fill_manual(values = c("#0072B2", "#D55E00")) +
+  theme_minimal() +
+  theme(legend.position = "none")
 
-g_emg / (box | hist_dens) 
+# Layout aprimorado com patchwork
+g_emg / (box | hist_dens) + 
+  plot_annotation(title = "Análise dos Sinais EMG", theme = theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14)))
 
 ```
 
@@ -458,51 +471,51 @@ g_emg / (box | hist_dens)
 
 ```{r}
 
+# Função para identificar pontos de inversão da trajetória (Turning Points)
 IndicesTP <- function(x){
-  dif_traj <- diff(sign(diff(x, na.pad = FALSE)))
-  
-  pontos_maxloc = function(i){
-  if(all(x[c(i, i+2)] < x[i+1]))
-    return(i+1)
-  else
-    return(numeric(0))
+  dif_traj <- diff(sign(diff(x, na.pad = FALSE)))  # Diferença da trajetória do sinal
+
+  # Função auxiliar para encontrar máximos locais
+  pontos_maxloc <- function(i){
+    if(all(x[c(i, i+2)] < x[i+1])) return(i+1) else return(numeric(0))
   }
-  
-  pontos_minloc = function(i){
-    if(all(x[c(i, i+2)] > x[i+1]))
-      return(i+1)
-    else
-      return(numeric(0))
+
+  # Função auxiliar para encontrar mínimos locais
+  pontos_minloc <- function(i){
+    if(all(x[c(i, i+2)] > x[i+1])) return(i+1) else return(numeric(0))
   }
-  
-  maxloc <- sapply(which(dif_traj < 0), pontos_maxloc)
-  maxloc <- unlist(maxloc)
-  
-  minloc <- sapply(which(dif_traj > 0), pontos_minloc)
-  minloc <- unlist(minloc)
-  
+
+  # Aplicação das funções para encontrar picos máximos e mínimos
+  maxloc <- unlist(sapply(which(dif_traj < 0), pontos_maxloc))
+  minloc <- unlist(sapply(which(dif_traj > 0), pontos_minloc))
+
+  # Lista dos pontos de inversão
   turning_points <- sort(c(maxloc, minloc))
-  
-  if(length(turning_points) > 0)
-    return(turning_points)
-  else
-    return(print("Turning points inexistentes"))
+
+  # Retorna os turning points ou uma mensagem caso não existam
+  if(length(turning_points) > 0) return(turning_points) else return(NULL)
 }
 
-a <- CH1$Amplitude
+# Aplicação da função nos dados
+a <- CH1_df$Amplitude
 itp <- IndicesTP(a)
 
-tpt <- function(ntp, df){
-  tp <- length(ntp)
-  n <- length(a)
-  mu <- 2*(n-2)/3
-  sigma <- sqrt((16*n-29)/90)
-  T <- (tp-mu)/sigma
-  
+# Função para calcular o teste de turning points (TPT)
+tpt <- function(turning_points, signal){
+  tp <- length(turning_points)  # Número de turning points
+  n <- length(signal)           # Comprimento do sinal
+
+  # Cálculo dos parâmetros estatísticos do TPT
+  mu <- 2 * (n - 2) / 3
+  sigma <- sqrt((16 * n - 29) / 90)
+  T <- (tp - mu) / sigma  # Estatística padronizada
+
   return(T)
 }
 
-tpt(itp,a)
+# Cálculo do teste de turning points
+tpt(itp, a)
+
 ```
 ```{r}
 
@@ -515,9 +528,9 @@ pvalue <- numeric(0)
 statT <- numeric(0)
 i <- 1
 j <- 1
-while ((i + 100) <= length(CH1$time)){
+while ((i + 100) <= length(CH1_df$Tempo)){
   
-  r <- turningpoint.test(CH1$Amplitude[i:(i+100)])
+  r <- turningpoint.test(CH1_df$Amplitude[i:(i+100)])
   pvalue[j] <- r$p.value
   statT[j] <- r$statistic
   
@@ -535,7 +548,7 @@ s <- data.frame(x = ts, y = statT, categoria = "statT")
 
 # df para o sinal EMG1
 
-emgg <- data.frame(x = CH1$time, y = CH1$Amplitude, categoria = "EMG1")
+emgg <- data.frame(x = CH1_df$Tempo, y = CH1_df$Amplitude, categoria = "EMG1")
 all <- rbind(emgg, p, s)
 
 # Plot
@@ -565,87 +578,53 @@ graph
 ```{r}
 
 library(tuneR)
+library(ggplot2)
+library(dplyr)
 
-# Criação de sinal simulado
+# Parâmetros do sinal
+t <- CH1_df$Tempo
+fs <- 1000  # 1/0.001
 
-t <- CH1$time
+# Criação do sinal senoidal
+sinal_sim <- data.frame(t = t, sinal = sin(2 * pi * fs * t))
 
-fs <- 1/0.001
-
-a_ <- sin(2*pi*fs*t)
-sinal_sim <- data.frame(t = t, sinal = a_)
-tf <- t[length(t)]
-
-# Adição de ruído
+# Geração de ruído branco
 duracao_inicio <- 34
+duracao_final <- 349.59 - 344
 
 ruido_inicio <- noise(kind = "white", samp.rate = fs, duration = duracao_inicio, xunit = "time")@left
+ruido_final  <- noise(kind = "white", samp.rate = fs, duration = duracao_final, xunit = "time")@left
 
-# rudio branco (334 a 349.59 segundos)
-duracao_final <- 349.59 - 344
-ruido_final <- noise(kind = "white", samp.rate = fs, duration = duracao_inicio, xunit = "time")@left
+# Inserção de ruído no início e no final do sinal
+sinal_sim$sinal[t <= 34] <- ruido_inicio[seq_along(t[t <= 34])]
+sinal_sim$sinal[t >= 344 & t <= 349.59] <- ruido_final[seq_along(t[t >= 344 & t <= 349.59])]
 
-# Insere ruído inicio
-for (i in seq(1:length(t))){
-  if(all((t[i] >= 0) & (t[i] <= 34))){
-    sinal_sim$sinal[i] <- ruido_inicio[i]
-  }
-}
+# Vetores para armazenar os resultados estatísticos
+pvalue <- vector("numeric", length = floor(length(t) / 100))
+statT  <- vector("numeric", length = floor(length(t) / 100))
 
-# Insere ruido final
-j <- 334001
-k <- 1
-
-while (j <= length(t)){
-  if(all((t[j] >= 344) & (t[j] <= 349.379))){
-    sinal_simulado$sinal[j] <- ruido_final[k]
-  }
-  j <= j + 1
-  k <- k + 1
-}
-
-# Array para guardar vetores pvalue e statT
-pvalue <- numeric(0)
-statT <- numeric(0)
-
-i <- 1
-j <- 1
-while((i + 100) <= length(sinal_simulado$t)){
-  
-# Faz o turningpoint.test para as janelas 
-  r <- turningpoint.test(CH1$Amplitude[i:(i + 100)])
+# Aplicação do teste de Turning Points em janelas de 100 pontos
+for (j in seq_along(pvalue)) {
+  idx <- ((j - 1) * 100 + 1):min(j * 100, length(t))
+  r <- turningpoint.test(CH1_df$Amplitude[idx])
   pvalue[j] <- r$p.value
   statT[j] <- r$statistic
-  
-  i <- i + 100
-  j <- j + 1
 }
 
-# Vetor tempo e df para o pvalue
+# Construção dos dataframes para visualização
+df_pvalue <- data.frame(x = seq_along(pvalue), y = pvalue, categoria = "pvalue")
+df_statT  <- data.frame(x = seq_along(statT), y = statT, categoria = "statT")
+df_emg    <- data.frame(x = sinal_sim$t, y = sinal_sim$sinal, categoria = "EMG simulado")
 
-tp <- seq(1, length(pvalue))
-p <- data.frame(x = tp, y = pvalue, categoria = "pvalue")
+# Combina todos os dados
+all_data <- bind_rows(df_emg, df_pvalue, df_statT)
 
-# vetor tempo e df p/ statT
-
-ts <- seq(1, length(statT))
-s <- data.frame(x = ts, y = statT, categoria = "statT")
-
-# dataframe p/ sinal simulado
-emgg <- data.frame(x = sinal_sim$t, y = sinal_sim$sinal, categorial = "EMG simulado")
-
-all2 <- rbind(emgg, p, s)
-
-# Plotagem gráfico
-
-plot <- ggplot(all2, aes(x = x, y = y)) +
+# Plotagem do gráfico
+ggplot(all_data, aes(x = x, y = y)) +
   geom_line() +
   facet_wrap(~ categoria, scales = "free_y", ncol = 1) +
-  labs(x = "Tempo (s)",
-       y = "Valor") +
-  xlim(0,375)
-
-plot
+  labs(x = "Tempo (s)", y = "Valor") +
+  xlim(0, 375)
 
 ```
 

@@ -1,0 +1,32 @@
+---
+title: " "
+author: " "
+date: ""
+output: 
+  pdf_document:
+    highlight: tango
+  html_document:
+    df_print: paged
+always_allow_html: true
+---
+
+\newpage
+\begin{titlepage}
+\begin{center}
+
+\large
+UNIVERSIDADE FEDERAL DE UBERLÂNDIA\\
+FACULDADE DE ENGENHARIA ELÉTRICA\\
+GRADUAÇÃO EM ENGENHARIA BIOMÉDICA\\[7cm]
+
+\Large
+\textbf{Heitor Pereira Nunes Fernandes Cunha}\\[2cm]
+
+\textbf{\large Processamento de Sinais Biomédicos: Módulo 5}\\[10cm]
+
+\large
+Uberlândia, MG\\
+2025
+
+\end{center}
+\end{titlepage}
