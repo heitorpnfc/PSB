@@ -8,7 +8,6 @@ output:
   html_document:
     df_print: paged
 always_allow_html: true
-
 ---
 
 \newpage
@@ -49,7 +48,7 @@ library(dygraphs)
 library(tidyverse)
 
 # Importar os dados
-dados <- read_xlsx("C:/Users/heito/Documents/GitHub/PSB/Módulo 5 - PSB/MODULO5.xlsx")
+dados <- read_xlsx("E:/GitHub/PSB/Módulo 5 - PSB/MODULO5.xlsx")
 
 # Construção do dataframe para CH1
 CH1_df <- tibble(Tempo = dados$time, Amplitude = dados$chan.1)
@@ -124,6 +123,7 @@ snr_ruido_CH1 <- 20 * log10(rms_ruido_parte2_CH1 / rms_ruido_parte1_CH1)
 snr_ruido_CH1
 
 ```
+
 ```{r}
 
 # Análise de ruído no canal CH2
@@ -255,6 +255,7 @@ boxplot_2 <- boxplot(CH2_d$valor[index2], plot = FALSE)
 boxplot_2$stat
 
 ```
+
 ```{r}
 
 # Cálculo da distância interquartil (IQR)
@@ -286,12 +287,20 @@ indexLIF2 <- which(CH2_d$valor < lif2)
 CH2_d$uif2[indexUIF2] <- CH2_d$valor[indexUIF2]
 CH2_d$lif2[indexLIF2] <- CH2_d$valor[indexLIF2]
 
-# Plotagem com dygraph
-dygraph(CH2_d, main = "Detecção de outliers CH2 (0 a 40 segundos)") %>%
-  dySeries("valor", label = "Sinal Original") %>%
-  dySeries("uif2", drawPoints = TRUE, pointSize = 3, color = "orange", label = "Outliers Sup.") %>%
-  dySeries("lif2", drawPoints = TRUE, pointSize = 3, color = "green", label = "Outliers Inf.") %>%
-  dyRangeSelector()
+# Supondo que CH2_d seja um dataframe com colunas: tempo, valor, uif2 e lif2
+ggplot(CH2_d, aes(x = tempo)) +
+  geom_line(aes(y = valor, color = "Sinal Original"), linewidth = 1) +
+  geom_point(aes(y = uif2, color = "Outliers Sup."), size = 3) +
+  geom_point(aes(y = lif2, color = "Outliers Inf."), size = 3) +
+  scale_color_manual(values = c("Sinal Original" = "black", 
+                                "Outliers Sup." = "orange", 
+                                "Outliers Inf." = "green")) +
+  labs(title = "Detecção de outliers CH2 (0 a 40 segundos)",
+       x = "Tempo (s)",
+       y = "Amplitude",
+       color = "Legenda") +
+  theme_minimal()
+
 
 ```
 
@@ -327,8 +336,8 @@ CH1_d$interp <- NA
 CH1_d$interp[CH1_desc$desc] <- y
 grafico <- ggplot(CH1_d, aes(x = Tempo, y = Amplitude)) +
   geom_line(color = "blue") +
-  geom_point(aes(y = uif), color = "orange") +
-  geom_point(aes(y = lif), color = "red") +
+  geom_point(aes(y = limite_superior), color = "orange") +
+  geom_point(aes(y = limite_inferior), color = "red") +
   labs(title = "Sinal CH1 com descontinuidade") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
@@ -342,8 +351,8 @@ grafico
 
 grafico2 <- ggplot(CH1_d, aes(x = Tempo, y = Amplitude)) +
   geom_line(color = "brown") +
-  geom_point(aes(y = uif), color = "blue") +
-  geom_point(aes(y = lif), color = "orange") +
+  geom_point(aes(y = limite_superior), color = "blue") +
+  geom_point(aes(y = limite_inferior), color = "orange") +
   geom_point(aes(y = interp), color = "black") +
   labs(title = "Sinal CH1 sem descontinuidade") +
   theme_minimal() +
@@ -517,6 +526,7 @@ tpt <- function(turning_points, signal){
 tpt(itp, a)
 
 ```
+
 ```{r}
 
 library(spgs)
