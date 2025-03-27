@@ -1,0 +1,724 @@
+---
+title: " "
+author: " "
+date: " "
+output: 
+  pdf_document:
+    highlight: tango
+  html_document:
+    df_print: paged
+always_allow_html: true
+
+---
+
+\newpage
+\begin{titlepage}
+\begin{center}
+
+\large
+UNIVERSIDADE FEDERAL DE UBERLÂNDIA\\
+FACULDADE DE ENGENHARIA ELÉTRICA\\
+GRADUAÇÃO EM ENGENHARIA BIOMÉDICA\\[7cm]
+
+\Large
+\textbf{Heitor Pereira Nunes Fernandes Cunha}\\[2cm]
+
+\textbf{\large Processamento de Sinais Biomédicos: Módulo 7}\\[10cm]
+
+\large
+Uberlândia, MG\\
+2025
+
+\end{center}
+\end{titlepage}
+
+\newpage
+\section*{Questão 1}
+
+> Letra A
+
+Gere uma sinal amostrado a partir de uma distribuição normal, com amplitudade variando entre 0 e 1, de duração de 10 s, e amostrado a 5 kHz. Ilustre o processo de janelamento sem sobreposição aplicado a este sinal. A duração de cada janela deverá ser de 500 ms. O sinal gerado, e o instante de início e fim de cada janela deverão ser plotados utilizando-se a biblioteca gráfica dyraphs. Dica: a função dyEvent pode ser utilizada para gerar linhas verticais em instantes desejados. Veja o trecho de código abaixo que ilustra esta situação. O resultado do gráfico gerado deve ser apresentado como parte do relatório.
+
+```{r}
+
+library(dygraphs)
+dygraph(presidents, main = "Presidential Approval") %>%
+  dyAxis("y", valueRange = c(0, 100)) %>%
+  dyEvent("1950-6-30", "Korea", labelLoc = "bottom") %>%
+  dyEvent("1965-2-09", "Vietnam", labelLoc = "bottom")
+
+```
+
+```{r}
+
+dygraph(presidents, main = "Presidential Approval") %>%
+ dyAxis("y", valueRange = c(0, 100)) %>%
+ dyEvent(c("1950-6-30", "1965-2-09"), c("Korea", "Vietnam"), labelLoc = "bottom") 
+
+```
+
+```{r}
+
+library(dygraphs)
+library(tuneR)
+
+# Função para gerar ruído rosa (1/f)
+generate_pink_noise <- function(n) {
+  white <- rnorm(n)
+  f <- fft(white)
+  n_spec <- floor(n/2) + 1
+  f_scale <- 1/sqrt(seq(1, n_spec))
+  f_scale <- c(f_scale, rev(f_scale[2:(n_spec - (n %% 2))]))
+  pink <- Re(fft(f * f_scale, inverse = TRUE)) / n
+  return(pink)
+}
+
+# Função para gerar ruído de potência (customizado)
+generate_power_noise <- function(n, beta = 1) {
+  white <- rnorm(n)
+  f <- fft(white)
+  n_spec <- floor(n/2) + 1
+  freq <- seq(1, n_spec)
+  f_scale <- 1/(freq^beta)
+  f_scale <- c(f_scale, rev(f_scale[2:(n_spec - (n %% 2))]))
+  power_noise <- Re(fft(f * f_scale, inverse = TRUE)) / n
+  return(power_noise)
+}
+
+# Função para gerar onda quadrada
+generate_square_wave <- function(t, freq) {
+  # duty cycle de 50% (onda quadrada simétrica)
+  cycle_pos <- (t * freq) %% 1
+  ifelse(cycle_pos < 0.5, 1, -1)
+}
+
+# Parâmetros comuns
+fs <- 1000 # frequência de amostragem em Hz
+bit_depth <- 16 # bits
+
+# 1. s1: ruído branco (2 segundos)
+duration_s1 <- 2
+t_s1 <- seq(0, duration_s1, by = 1/fs)
+s1 <- rnorm(length(t_s1))
+
+# 2. s2: dente de serra (5 segundos, 10 Hz)
+duration_s2 <- 5
+t_s2 <- seq(0, duration_s2, by = 1/fs)
+freq_sawtooth <- 10
+one_period <- seq(0, 1/freq_sawtooth, by = 1/fs)
+saw_one_period <- 2 * (one_period * freq_sawtooth - floor(0.5 + one_period * freq_sawtooth))
+s2 <- rep(saw_one_period, ceiling(duration_s2 * freq_sawtooth))[1:length(t_s2)]
+
+# 3. s3: sinal senoidal (5 segundos, 10 Hz)
+duration_s3 <- 5
+t_s3 <- seq(0, duration_s3, by = 1/fs)
+freq_sin <- 10
+s3 <- sin(2 * pi * freq_sin * t_s3)
+
+# 4. s4: ruído rosa (2 segundos)
+duration_s4 <- 2
+t_s4 <- seq(0, duration_s4, by = 1/fs)
+s4 <- generate_pink_noise(length(t_s4))
+
+# 5. s5: ruído de potência (2 segundos)
+duration_s5 <- 2
+t_s5 <- seq(0, duration_s5, by = 1/fs)
+s5 <- generate_power_noise(length(t_s5), beta = 1.5)
+
+# 6. s6: onda quadrada (5 segundos, 10 Hz)
+duration_s6 <- 5
+t_s6 <- seq(0, duration_s6, by = 1/fs)
+freq_square <- 10
+s6 <- generate_square_wave(t_s6, freq_square)
+
+# Combinar todos os sinais
+combined_time <- c(t_s1, 
+                   max(t_s1) + t_s2, 
+                   max(t_s1) + max(t_s2) + t_s3,
+                   max(t_s1) + max(t_s2) + max(t_s3) + t_s4,
+                   max(t_s1) + max(t_s2) + max(t_s3) + max(t_s4) + t_s5,
+                   max(t_s1) + max(t_s2) + max(t_s3) + max(t_s4) + max(t_s5) + t_s6)
+
+combined_signal <- c(s1, s2, s3, s4, s5, s6)
+
+# Normalizar para 16 bits
+max_val <- 2^(bit_depth-1) - 1
+combined_signal_16bit <- round(combined_signal/max(abs(combined_signal)) * max_val)
+
+# Criar dataframe para plotagem
+df_combined <- data.frame(
+  time = combined_time,
+  signal = combined_signal_16bit
+)
+
+# Plotar usando dygraphs
+dygraph(df_combined, main = "Série Temporal Combinada") %>%
+  dySeries("signal", label = "Amplitude") %>%
+  dyAxis("x", label = "Tempo (s)") %>%
+  dyAxis("y", label = "Amplitude (16 bits)") %>%
+  dyEvent(max(t_s1), "Fim Ruído Branco", labelLoc = "bottom") %>%
+  dyEvent(max(t_s1) + max(t_s2), "Fim Dente de Serra", labelLoc = "bottom") %>%
+  dyEvent(max(t_s1) + max(t_s2) + max(t_s3), "Fim Senoidal", labelLoc = "bottom") %>%
+  dyEvent(max(t_s1) + max(t_s2) + max(t_s3) + max(t_s4), "Fim Ruído Rosa", labelLoc = "bottom") %>%
+  dyEvent(max(t_s1) + max(t_s2) + max(t_s3) + max(t_s4) + max(t_s5), "Fim Ruído Potência", labelLoc = "bottom") %>%
+  dyOptions(drawPoints = FALSE, pointSize = 1, colors = "blue") %>%
+  dyRangeSelector()
+
+```
+
+> Letra B
+
+Considerando o problema da questão 1, altere a duração da janela para 1.000 ms, e apresente a solução para o mesmo problema adotando-se a sobreposição de janelas de 50%. O resultado do gráfico gerado deve ser apresentado como parte do relatório.
+
+```{r}
+
+library(dygraphs)
+
+# Parâmetros da análise ----
+fs <- 1000  # Frequência de amostragem em Hz
+window_size <- 1000  # Tamanho da janela em ms
+overlap <- 0.5  # 50% de sobreposição
+
+# Converter para amostras
+N <- (window_size/1000) * fs  # Tamanho da janela em amostras
+step <- round(N * (1 - overlap))  # Passo entre janelas
+
+# Criar índices das janelas ----
+total_samples <- length(combined_signal_16bit)
+starts <- seq(1, total_samples - N + 1, by = step)
+ends <- starts + N - 1
+
+# Verificar se a última janela está completa
+if(ends[length(ends)] > total_samples) {
+  starts <- starts[-length(starts)]
+  ends <- ends[-length(ends)]
+}
+
+# Preparar dados para visualização ----
+window_centers <- combined_time[starts + N/2]  # Tempo no centro de cada janela
+
+# Criar marcadores para todas as janelas
+dygraph_data <- data.frame(time = combined_time, signal = combined_signal_16bit)
+
+# Criar gráfico com todas as janelas ----
+dygraph(dygraph_data, main = paste("Análise com Janelas de", window_size, "ms e 50% de Sobreposição")) %>%
+  dySeries("signal", label = "Amplitude") %>%
+  dyAxis("x", label = "Tempo (s)") %>%
+  dyAxis("y", label = "Amplitude (16 bits)") %>%
+  dyOptions(drawPoints = FALSE, strokeWidth = 0.8, colors = "#1f77b4") %>%
+  dyRangeSelector() %>%
+  dyHighlight(highlightCircleSize = 3, 
+              highlightSeriesBackgroundAlpha = 0.3,
+              hideOnMouseOut = TRUE) %>%
+  # Adicionar marcações para todas as janelas
+  {
+    g <- .
+    for(i in seq_along(starts)) {
+      g <- g %>% 
+        dyEvent(window_centers[i], paste("Janela", i), 
+                labelLoc = ifelse(i %% 2 == 0, "top", "bottom"), 
+                color = "rgba(0, 0, 0, 0.8)")
+    }
+    g
+  } %>%
+  # Destacar primeira e última janela
+  dyShading(from = combined_time[starts[1]], 
+            to = combined_time[ends[1]], 
+            color = "rgba(255, 165, 0, 0.2)") %>%
+  dyShading(from = combined_time[starts[length(starts)]], 
+            to = combined_time[ends[length(ends)]], 
+            color = "rgba(0, 128, 0, 0.2)") %>%
+  dyAnnotation(window_centers[1], text = "Início", 
+               tooltip = "Primeira janela") %>%
+  dyAnnotation(window_centers[length(window_centers)], text = "Fim", 
+               tooltip = "Última janela") %>%
+  dyLegend(show = "always", width = 400)
+
+```
+
+\newpage
+\section*{Questão 2}
+
+Faça um programa que realize de forma automática a detecção de bursts de atividade eletromiográfica. O sinal eletromiográfico deverá ser gerado de acordo com os seguintes critérios:
+
+- frequência de amostragem = 1000 Hz;
+- duração da simulação = 10 segundos;
+- número total de bursts = 5;
+- duração de cada burst = 1 segundo;
+- trechos de ruído amostrados a partir de uma distribuição normal.
+
+```{r}
+
+library(dygraphs)
+library(signal)
+
+library(dygraphs)
+library(tuneR)
+
+# Configurações básicas para geração do sinal ----
+taxa_amostragem <- 1000  # Hz (amostras por segundo)
+duracao_total <- 10      # segundos
+tempo_amostral <- 1/taxa_amostragem  # período entre amostras (em segundos)
+
+# Criando o vetor de tempo ----
+# Gera uma sequência de 0 a 10 segundos com intervalo de 1ms
+tempo <- seq(from = 0, 
+             to = duracao_total, 
+             by = tempo_amostral)
+
+# Gerando os bursts usando onda quadrada ----
+frequencia_bursts <- 5  # Hz (5 bursts por segundo)
+onda_quadrada <- square(frequencia_bursts, 
+                        samp.rate = taxa_amostragem,
+                        duration = duracao_total + tempo_amostral,
+                        xunit = "time")@left
+
+# Criando o ruído de fundo ----
+ruido_normal <- rnorm(length(tempo))  # Ruído branco gaussiano
+ruido_sintetico <- noise(kind = "white",
+                         samp.rate = taxa_amostragem,
+                         duration = duracao_total + tempo_amostral,
+                         xunit = "time")@left
+
+# Construindo o sinal EMG sintético ----
+sinal_emg <- numeric(length(tempo))
+
+# Identificando regiões de repouso (onde a onda quadrada é -1)
+regioes_repouso <- which(onda_quadrada == -1)
+sinal_emg[regioes_repouso] <- ruido_normal[regioes_repouso]
+
+# Identificando regiões de burst (onde a onda quadrada é 1)
+regioes_burst <- which(onda_quadrada > -1)
+sinal_emg[regioes_burst] <- ruido_sintetico[regioes_burst] * 25  # Amplificando o ruído nos bursts
+
+# Criando dataframe para visualização ----
+dados_emg <- data.frame(
+  tempo = tempo,
+  sinal = sinal_emg
+)
+
+# Visualização interativa do sinal ----
+dygraph(dados_emg, 
+        main = "Sinal EMG Sintético com Bursts") %>%
+  dySeries("sinal", label = "Amplitude (μV)") %>%
+  dyAxis("x", label = "Tempo (s)") %>%
+  dyAxis("y", label = "Amplitude") %>%
+  dyRangeSelector(height = 20) %>%
+  dyOptions(colors = "#1f77b4", strokeWidth = 1)
+
+
+```
+
+```{r}
+
+library(dygraphs)
+
+# CONFIGURAÇÕES DE JANELAMENTO ----
+janela_ms <- 100                     # Tamanho da janela em milissegundos
+sobreposicao <- 0.3                  # 30% de sobreposição entre janelas
+taxa_amostragem <- 1000              # Hz (definido no código anterior)
+duracao_amostral <- 1/taxa_amostragem # Tempo entre amostras
+
+# FUNÇÃO PARA JANELAMENTO COM SOBREPOSIÇÃO ----
+aplicar_janelamento <- function(sinal, tamanho_janela_amostras, percentual_sobreposicao) {
+  
+  # Calcula o passo entre inícios de janela
+  passo <- round(tamanho_janela_amostras * (1 - percentual_sobreposicao))
+  
+  # Gera os índices de início e fim de cada janela
+  indices_inicio <- seq(1, length(sinal) - tamanho_janela_amostras + 1, by = passo)
+  indices_fim <- indices_inicio + tamanho_janela_amostras - 1
+  
+  # Remove janelas incompletas no final
+  janelas_completas <- indices_fim <= length(sinal)
+  indices_inicio <- indices_inicio[janelas_completas]
+  indices_fim <- indices_fim[janelas_completas]
+  
+  # Cria lista com as janelas
+  janelas <- lapply(seq_along(indices_inicio), function(i) {
+    sinal[indices_inicio[i]:indices_fim[i]]
+  })
+  
+  return(list(
+    janelas = janelas,
+    tempos_centrais = (indices_inicio + tamanho_janela_amostras/2) * duracao_amostral
+  ))
+}
+
+# APLICAÇÃO DO JANELAMENTO ----
+tamanho_janela_amostras <- (janela_ms/1000) * taxa_amostragem
+resultado_janelamento <- aplicar_janelamento(emg, 
+                                           tamanho_janela_amostras, 
+                                           sobreposicao)
+
+# CÁLCULO DO RMS PARA CADA JANELA ----
+calcular_rms <- function(janelas) {
+  sapply(janelas, function(janela) {
+    sqrt(mean(janela^2))  # Fórmula RMS
+  })
+}
+
+rms_valores <- calcular_rms(resultado_janelamento$janelas)
+
+# PREPARAÇÃO DOS DADOS PARA VISUALIZAÇÃO ----
+dados_rms <- data.frame(
+  tempo = resultado_janelamento$tempos_centrais,
+  valor_rms = rms_valores
+)
+
+# VISUALIZAÇÃO INTERATIVA ----
+dygraph(dados_rms, 
+        main = "Evolução Temporal do Valor RMS",
+        xlab = "Tempo (s)",
+        ylab = "Valor RMS") %>%
+  dySeries("valor_rms", label = "RMS") %>%
+  dyAxis("x", drawGrid = TRUE) %>%
+  dyAxis("y", drawGrid = TRUE) %>%
+  dyOptions(colors = "green", 
+            strokeWidth = 2,
+            fillGraph = FALSE,
+            drawPoints = TRUE,
+            pointSize = 3) %>%
+  dyRangeSelector(height = 30,
+                 fillColor = " #d9d9d9",
+                 strokeColor = "grey") %>%
+  dyHighlight(highlightCircleSize = 5,
+              highlightSeriesBackgroundAlpha = 0.3,
+              hideOnMouseOut = TRUE)
+
+```
+
+\newpage
+\section*{Questão 3}
+
+> Letra A
+
+Gere uma série temporal formada pela combinação (concatenação temporal) dos seguintes sinais
+básicos:
+
+-> s1: ruído branco, de duração igual a 2 segundos, amostrado a 1000 Hz, codificado em 16 bits.
+-> s2: dente de serra, de duração igual a 5 segundos, oscilando a 10 Hz, amostrada a 1000 Hz, codificada em 16 bits.
+-> s3: sinal senoidal, de duração igual a 5 segundos, oscilando a 10 Hz, amostrado a 1000 Hz, codificada em 16 bits.
+-> s4: ruído rosa, de duração igual a 2 segundos, amostrado a 1000 Hz, codificado em 16 bits.
+-> s5: ruído de potência, de duração igual a 2 segundos, amostrado a 1000 Hz, codificado em 16 bits.
+-> s6: onda quadrada de duração igual a 5 segundos, oscilando a 10 Hz, amostrada a 1000 Hz, codificada em 16 bits.
+
+O sinal resultante deve ser concatenado de acordo com a seguinte ordem: s1, s2, s3, s4, s5, s6.
+
+```{r}
+
+library(tuneR)
+library(dygraphs)
+
+# Configurações comuns
+fs <- 1000  # Frequência de amostragem (Hz)
+bit_depth <- 16  # Resolução em bits
+
+# 1. Função para gerar ruído rosa (1/f)
+gerar_ruido_rosa <- function(duracao) {
+  n <- fs * duracao
+  white <- rnorm(n)
+  f <- fft(white)
+  n_spec <- floor(n/2) + 1
+  f_scale <- 1/sqrt(seq(1, n_spec))
+  f_scale <- c(f_scale, rev(f_scale[2:(n_spec - (n %% 2))]))
+  pink <- Re(fft(f * f_scale, inverse = TRUE)) / n
+  return(pink)
+}
+
+# 2. Função para gerar ruído de potência (1/f^β)
+gerar_ruido_potencia <- function(duracao, beta = 1.5) {
+  n <- fs * duracao
+  white <- rnorm(n)
+  f <- fft(white)
+  n_spec <- floor(n/2) + 1
+  freq <- seq(1, n_spec)
+  f_scale <- 1/(freq^beta)
+  f_scale <- c(f_scale, rev(f_scale[2:(n_spec - (n %% 2))]))
+  power_noise <- Re(fft(f * f_scale, inverse = TRUE)) / n
+  return(power_noise)
+}
+
+# Gerar os sinais individuais
+set.seed(123)  # Para reproduzibilidade
+
+# s1: Ruído branco (2s)
+s1 <- rnorm(fs * 2)
+
+# s2: Dente de serra (5s, 10Hz)
+t_s2 <- seq(0, 5, length.out = fs * 5)
+s2 <- 2 * (t_s2 * 10 - floor(0.5 + t_s2 * 10))
+
+# s3: Sinal senoidal (5s, 10Hz)
+t_s3 <- seq(0, 5, length.out = fs * 5)
+s3 <- sin(2 * pi * 10 * t_s3)
+
+# s4: Ruído rosa (2s)
+s4 <- gerar_ruido_rosa(2)
+
+# s5: Ruído de potência (2s)
+s5 <- gerar_ruido_potencia(2)
+
+# s6: Onda quadrada (5s, 10Hz)
+t_s6 <- seq(0, 5, length.out = fs * 5)
+s6 <- sign(sin(2 * pi * 10 * t_s6))
+
+# Normalizar para 16 bits
+normalizar_16bits <- function(x) {
+  range <- 2^(bit_depth - 1) - 1
+  x_norm <- x / max(abs(x)) * range
+  return(round(x_norm))
+}
+
+s1 <- normalizar_16bits(s1)
+s2 <- normalizar_16bits(s2)
+s3 <- normalizar_16bits(s3)
+s4 <- normalizar_16bits(s4)
+s5 <- normalizar_16bits(s5)
+s6 <- normalizar_16bits(s6)
+
+# Concatenar os sinais na ordem especificada
+sinal_completo <- c(s1, s2, s3, s4, s5, s6)
+
+# Criar vetor de tempo correspondente
+tempo_total <- 2 + 5 + 5 + 2 + 2 + 5  # Soma das durações
+tempo <- seq(0, tempo_total, length.out = length(sinal_completo))
+
+# Criar objeto Wave para exportação
+onda <- Wave(left = sinal_completo, samp.rate = fs, bit = bit_depth)
+
+# Visualização interativa
+dados_vis <- data.frame(
+  tempo = tempo,
+  sinal = sinal_completo,
+  segmento = c(rep("Ruído Branco", length(s1)),
+               rep("Dente de Serra", length(s2)),
+               rep("Senoidal", length(s3)),
+               rep("Ruído Rosa", length(s4)),
+               rep("Ruído Potência", length(s5)),
+               rep("Onda Quadrada", length(s6)))
+)
+
+dygraph(dados_vis[,1:2], main = "Série Temporal Combinada") %>%
+  dySeries("sinal", label = "Amplitude (16 bits)") %>%
+  dyAxis("x", label = "Tempo (s)") %>%
+  dyAxis("y", label = "Amplitude") %>%
+  dyEvent(2, "s1 p/ s2", labelLoc = "bottom") %>%
+  dyEvent(7, "s2 p/ s3", labelLoc = "bottom") %>%
+  dyEvent(12, "s3 p/ s4", labelLoc = "bottom") %>%
+  dyEvent(14, "s4 p/ s5", labelLoc = "bottom") %>%
+  dyEvent(16, "s5 p/ s6", labelLoc = "bottom") %>%
+  dyOptions(colors = "#1f77b4", strokeWidth = 0.8) %>%
+  dyRangeSelector(height = 30)
+
+```
+
+> Letra B
+
+Faça o janelamento do sinal gerado na letra a e estime a média de cada janela. O tamanho da janela
+deve ser igual a 100 ms com sobreposição de 50%.
+
+```{r}
+
+library(dygraphs)
+
+### CONFIGURAÇÕES DO JANELAMENTO ###
+janela_ms <- 100       # Tamanho da janela em milissegundos
+sobreposicao <- 0.5    # 50% de sobreposição
+fs <- 1000             # Frequência de amostragem em Hz
+
+### CÁLCULO DOS PARÂMETROS ###
+amostras_por_janela <- round(janela_ms / 1000 * fs)  # 100 amostras
+passo <- round(amostras_por_janela * (1 - sobreposicao))  # 50 amostras
+
+### FUNÇÃO DE JANELAMENTO ###
+realizar_janelamento <- function(sinal, tamanho_janela, passo) {
+  n <- length(sinal)
+  indices_inicio <- seq(1, n - tamanho_janela + 1, by = passo)
+  indices_fim <- indices_inicio + tamanho_janela - 1
+  
+  # Garantir que não ultrapasse o comprimento do sinal
+  indices_fim <- pmin(indices_fim, n)
+  
+  # Calcular médias para cada janela
+  medias <- sapply(seq_along(indices_inicio), function(i) {
+    mean(sinal[indices_inicio[i]:indices_fim[i]])
+  })
+  
+  # Calcular tempo central de cada janela (em segundos)
+  tempos_centrais <- (indices_inicio + tamanho_janela/2) / fs
+  
+  return(data.frame(
+    tempo = tempos_centrais,
+    media = medias
+  ))
+}
+
+### APLICAÇÃO DO JANELAMENTO ###
+resultados <- realizar_janelamento(sinal_completo, amostras_por_janela, passo)
+
+### VISUALIZAÇÃO DOS RESULTADOS ###
+dygraph(resultados, main = "Médias por Janela (100ms com 50% sobreposição)") %>%
+  dySeries("media", label = "Média da Janela") %>%
+  dyAxis("x", label = "Tempo (s)") %>%
+  dyAxis("y", label = "Amplitude Média") %>%
+  dyOptions(colors = "darkgreen", strokeWidth = 1.5) %>%
+  dyHighlight(highlightCircleSize = 4, 
+              highlightSeriesBackgroundAlpha = 0.3) %>%
+  dyRangeSelector(height = 30) %>%
+  # Adicionar linhas de referência para os segmentos originais
+  dyEvent(2, "Ruído p/ Serra", labelLoc = "bottom", color = "grey") %>%
+  dyEvent(7, "Serra p/ Senóide", labelLoc = "bottom", color = "grey") %>%
+  dyEvent(12, "Senóide p/ Rosa", labelLoc = "bottom", color = "grey") %>%
+  dyEvent(14, "Rosa p/ Potência", labelLoc = "bottom", color = "grey") %>%
+  dyEvent(16, "Potência p/ Quadrada", labelLoc = "bottom", color = "grey")
+
+# Calcular diferenças entre médias consecutivas
+diferencas <- diff(resultados$media)
+
+# Identificar pontos onde a diferença é significativa
+limiar_mudanca <- sd(diferencas) * 2
+mudancas <- which(abs(diferencas) > limiar_mudanca)
+
+```
+
+> Letra C
+
+Faça a subtração entre o sinal original (letra a) e o sinal obtido na letra b.
+
+Dica: como os sinais possuem número de amostras diferentes é necessário utilizar interpolação para realizar a subtração entre eles. A função pchip da biblioteca pracma pode ser utilizada para essa finalidade.
+
+```{r}
+
+library(dygraphs)
+
+### PREPARAÇÃO DOS DADOS ###
+
+# 1. Recriar o sinal suavizado (médias móveis) com o mesmo comprimento do original
+# Primeiro, criamos um vetor vazio com o mesmo tamanho do sinal original
+sinal_suavizado <- numeric(length(sinal_completo))
+
+# Preenchemos com as médias calculadas, replicando os valores para cada janela
+for (i in seq_along(resultados$tempo)) {
+  inicio <- round((resultados$tempo[i] - janela_ms/2000) * fs)  # Calcula início da janela
+  fim <- round((resultados$tempo[i] + janela_ms/2000) * fs)     # Calcula fim da janela
+  fim <- min(fim, length(sinal_completo))                       # Ajusta para não ultrapassar
+  
+  sinal_suavizado[inicio:fim] <- resultados$media[i]
+}
+
+# 2. Realizar a subtração (sinal original - sinal suavizado)
+sinal_diferenca <- sinal_completo - sinal_suavizado
+
+### VISUALIZAÇÃO DOS RESULTADOS ###
+
+# Criar dataframe combinado para visualização
+dados_comparacao <- data.frame(
+  tempo = tempo,
+  original = sinal_completo,
+  suavizado = sinal_suavizado,
+  diferenca = sinal_diferenca
+)
+
+# Gráfico comparativo
+dygraph(dados_comparacao[, c("tempo", "original", "suavizado")], 
+        main = "Comparação: Sinal Original vs Suavizado") %>%
+  dySeries("original", label = "Sinal Original") %>%
+  dySeries("suavizado", label = "Sinal Suavizado") %>%
+  dyAxis("x", label = "Tempo (s)") %>%
+  dyAxis("y", label = "Amplitude") %>%
+  dyOptions(colors = c("blue", "red")) %>%
+  dyRangeSelector(height = 30) %>%
+  dyHighlight(highlightCircleSize = 4)
+
+```
+
+```{r}
+
+# Gráfico da diferença
+dygraph(dados_comparacao[, c("tempo", "diferenca")], 
+        main = "Diferença: Sinal Original - Sinal Suavizado") %>%
+  dySeries("diferenca", label = "Diferença") %>%
+  dyAxis("x", label = "Tempo (s)") %>%
+  dyAxis("y", label = "Amplitude") %>%
+  dyOptions(colors = "purple") %>%
+  dyRangeSelector(height = 30) %>%
+  dyShading(from = 2, to = 7, color = "#FFEEEE") %>%
+  dyShading(from = 7, to = 12, color = "#EEFFEE") %>%
+  dyShading(from = 12, to = 14, color = "#EEEEFF") %>%
+  dyShading(from = 14, to = 16, color = "#FFEEFF") %>%
+  dyShading(from = 16, to = 21, color = "#FFFFEE")
+
+```
+
+
+> Letra D
+
+Utilize a bibliteca ggplot e a função facet_wrap para plotar os gráficos dos sinais resultantes na seguinte ordem: Sinal Original, Sinal Janelado e Sinal Diferença
+
+```{r}
+
+##### RESOLVER ESSA PROBLEMA 
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+# Preparação dos dados para o ggplot
+dados_plot <- data.frame(
+  tempo = rep(tempo, 3),
+  valor = c(sinal_completo, sinal_suavizado, sinal_diferenca),
+  tipo = factor(rep(c("Original", "Janelado", "Diferenca"), 
+                   each = length(tempo)),
+                levels = c("Original", "Janelado", "Diferenca"))
+)
+
+# Adicionando informações de segmento para destacar no gráfico
+dados_plot$segmento <- case_when(
+  tempo < 2 ~ "Ruído Branco",
+  tempo >= 2 & tempo < 7 ~ "Dente de Serra",
+  tempo >= 7 & tempo < 12 ~ "Senoidal",
+  tempo >= 12 & tempo < 14 ~ "Ruído Rosa",
+  tempo >= 14 & tempo < 16 ~ "Ruído Potencia",
+  TRUE ~ "Onda Quadrada"
+)
+
+# Criando o gráfico com facet_wrap
+ggplot(dados_plot, aes(x = tempo, y = valor)) +
+  geom_line(aes(color = segmento), linewidth = 0.5) +
+  facet_wrap(~ tipo, ncol = 1, scales = "free_y") +
+  scale_color_brewer(palette = "Set1") +
+  labs(title = "Comparacao dos Sinais: Original, Janelado e Diferença",
+       x = "Tempo (s)",
+       y = "Amplitude",
+       color = "Segmento") +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    strip.text = element_text(size = 12, face = "bold"),
+    panel.spacing = unit(1, "lines")
+  ) +
+  # Adicionar linhas verticais para as transições
+  geom_vline(xintercept = c(2, 7, 12, 14, 16), 
+             linetype = "dashed", color = "gray50", alpha = 0.7) +
+  # Adicionar rótulos para as transições
+  annotate("text", x = c(1, 4.5, 9.5, 13, 15, 18.5), y = Inf, 
+           label = c("Ruído", "Serra", "Senóide", "Rosa", "Potência", "Quadrada"),
+           vjust = 2, hjust = 0.5, size = 3, color = "gray30")
+
+```
+
+> Letra E
+
+Utilize a biblioteca plotly para gerar um gráfico interativo a partir do gráfico gerado na letra d e explique o efeito da subtração entre o Sinal Original e o Sinal Janelado.
+
+```{r}
+
+library(plotly)
+
+# gera o gráfico interativo
+ggplotly(ss)
+
+```
+
+A subtração de sinais é realizada para “cancelar” o efeito da janela aplicada no sinal original. O objetivo é obter o sinal original não afetado pela janela. Com o gráfico interativo é possível perceber que ao tentar cancelar o efeito da janela o sinal perde um pouco a sua forma porém mantém, de maneira geral, o formato original.
