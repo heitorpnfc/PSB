@@ -8,7 +8,6 @@ output:
   html_document:
     df_print: paged
 always_allow_html: true
-
 ---
 
 \newpage
@@ -37,9 +36,9 @@ Uberlândia, MG\\
 
 > Considerando os dados disponíveis no arquivo MODULO5.xlsx, disponível na plataforma Moodle, responda às questões: Considerando os dados disponíveis no arquivo MODULO5.xlsx, disponível na plataforma Moodle, responda às questões:
 
-<!-- Letra A -->
+<!-- Letra 1.1 -->
 
-> erar um sinal sintético resultante da concatenação de quatro sinais básicos: 
+> Gerar um sinal sintético resultante da concatenação de quatro sinais básicos: 
 (i) sinal sinoidal oscilando a 40 Hz com amplitude igual a 1; (ii) sinal senoidal oscilando a 40 Hz com amplitude igual a 1/2;
 (iii) sinal senoidal oscilando a 1 Hz com amplitude igual a 1; (iv) sinal do tipo dente de serra (triangular) oscilando a 10 Hz e de amplitude igual a 1. A duração de cada sinal deve ser de 5 segundos e a frequência de amostragem deve ser de 1000 Hz.
 
@@ -51,113 +50,113 @@ library(signal)
 library(patchwork)
 library(tidyverse)
 
-fs <- 1000 # frequencia de amostragem
-dt <- 1/fs # resolucao temporal
-tf <- 5 # tempo final (s)
-t <- seq(from = 0, to = tf, by = dt) # vetor de tempo
+# Definições básicas
+taxa_amostragem <- 1000
+intervalo_tempo <- 1 / taxa_amostragem
+duracao <- 5
+tempo <- seq(0, duracao, by = intervalo_tempo)
 
-# frequencia de oscilacao
-f1 <- 40
-f3 <- 1
-f4 <- 10
+# Frequências dos sinais
+freq_seno1 <- 40
+freq_seno2 <- freq_seno1
+freq_seno3 <- 1
+freq_dente_serra <- 10
 
-# Onda 1
-y1 <- sin(2*pi*f1*t)
+# Função para gerar sinais senoidais
+gerar_senoide <- function(freq, tempo, amplitude = 1) {
+  amplitude * sin(2 * pi * freq * tempo)
+}
 
-# Onda 2
-y2 <- y1/2
-
-# Onda 3
-y3 <- sin(2*pi*f3*t)
-
-# Onda 4
-y4 <- sawtooth(f4, samp.rate = fs, duration = tf + dt, xunit = "time")@left
+# Geração dos sinais
+sinal_seno1 <- gerar_senoide(freq_seno1, tempo)
+sinal_seno2 <- gerar_senoide(freq_seno2, tempo, amplitude = 0.5)
+sinal_seno3 <- gerar_senoide(freq_seno3, tempo)
+sinal_st <- sawtooth(freq_dente_serra,
+                     samp.rate = taxa_amostragem, 
+                     duration = duracao + intervalo_tempo,
+                     xunit = "time")@left
 
 ```
 
-
-<!-- Letra B -->
+<!-- Letra 1.2 -->
 
 > Cada um dos sinais gerados deve ser normalizado considerando o uso de um conversor analógico digital de 16 bits (nbits), tal que o valor de amplitude seja um número do tipo inteiro x E S (Equação 1).
 
 ```{r}
 
 library(BBmisc)
+limite_inferior <- -(2^16) / 2
+limite_superior <- ((2^16)/2) - 1
 
-#Variaveis do intervalo de normalizacao
-n0 <- -(2^16)/2
-n1 <- ((2^16)/2) - 1
 
-y1_normalizado <- normalize(y1, method = "range", range = c(n0, n1))
-y2_normalizado <- y1_normalizado/2
-y3_normalizado <- normalize(y3, method = "range", range = c(n0, n1))
-y4_normalizado <- normalize(y4, method = "range", range = c(n0, n1))
+sinal_seno1_norm<- normalize(sinal_seno1, method = "range",range = c(limite_inferior,limite_superior)) 
+sinal_seno2_norm<- sinal_seno1_norm/2 
+sinal_seno3_norm<- normalize(sinal_seno3, method = "range",range = c(limite_inferior,limite_superior)) 
+sinal_st_norm<- normalize(sinal_st, method = "range",range = c(limite_inferior,limite_superior)) 
 
 ```
 
-<!-- Letra C -->
+<!-- Letra 1.3 -->
 
 > O sinais resultantes devem ser plotados utilizando-se o ggplot e o patchwork (veja o exemplo de resultado na Figura 1)
 
 ```{r}
 
-# Construcao df para plotagem
 
-sinal1 <- data.frame(t = t, y = y1_normalizado, categoria = "y1")
-sinal2 <- data.frame(t = t, y = y2_normalizado, categoria = "y2")
-sinal3 <- data.frame(t = t, y = y3_normalizado, categoria = "y3")
-sinal4 <- data.frame(t = t, y = y4_normalizado, categoria = "y4")
+# Criando dataframes para visualização
+df_seno1 <- data.frame(tempo, amplitude = sinal_seno1_norm, tipo = "Seno 40Hz")
+df_seno2 <- data.frame(tempo, amplitude = sinal_seno2_norm, tipo = "Seno 40Hz (0.5x)")
+df_seno3 <- data.frame(tempo, amplitude = sinal_seno3_norm, tipo = "Seno 1Hz")
+df_dente_serra <- data.frame(tempo, amplitude = sinal_st_norm, tipo = "Dente de Serra 10Hz")
 
-sinais <- rbind(sinal1, sinal2, sinal3, sinal4)
+df_sinais <- rbind(df_seno1, df_seno2, df_seno3, df_dente_serra)
 
-# Plotagem para os sinais y1, y2, y3 e y4
-
-sinalr <- ggplot(sinais, aes(x = t, y = y)) +
+# Plotagem dos sinais individuais
+plot_sinais <- ggplot(df_sinais, aes(x = tempo, y = amplitude)) +
   geom_line() +
-  facet_wrap(~ categoria, ncol = 1) +
+  facet_wrap(~ tipo, ncol = 1) +
   xlab("Tempo (s)") +
-  ylab("y")
+  ylab("Amplitude")
 
-# Contatenando os sinais
-sinalc <- c(y1_normalizado, y2_normalizado, y3_normalizado, y4_normalizado)
-
-# Concatenando o vetor tempo
-tempoc <- c(t, t+5, t+10, t+15)
-
-# df para sinal concatenado
-
-sinaldf <- data.frame(x = tempoc, y = sinalc)
+# Criação do sinal concatenado
+sinal_concatenado <- c(sinal_seno1_norm, sinal_seno2_norm, sinal_seno3_norm, sinal_st_norm)
+tempo_concatenado <- c(tempo, tempo + 5, tempo + 10, tempo + 15)
+df_concatenado <- data.frame(tempo = tempo_concatenado, amplitude = sinal_concatenado)
 
 # Plotagem do sinal concatenado
-
-sinalconc <- ggplot(sinaldf, aes(x = x, y = y)) +
+plot_concatenado <- ggplot(df_concatenado, aes(x = tempo, y = amplitude)) +
   geom_line() +
   xlab("Tempo (s)") +
-  ylab("Resultado")
+  ylab("Amplitude")
 
-sinalr | sinalconc
+# Exibição dos gráficos
+plot_sinais | plot_concatenado
 
 ```
-<!-- Letra D -->
+<!-- Letra 1.4 -->
 
 > O sinal resultante deve ser salvo  no formato wav. Utilize para isso o pacote tune R. Deve-se salvar o sinal apenas esquerdo.
 
 ```{r}
 
-# Convertendo o sinal e salvando-o em .wav
+# Conversão para formato WAV
+sinal_wav <- Wave(left = as.integer(sinal_concatenado), 
+                  samp.rate = taxa_amostragem,
+                  bit = 16,
+                  pcm = TRUE)
 
-wav <- Wave(left = sinalconc, samp.rate = fs, bit = 16)
-writeWave(wav, "sinal_conc.wav") # Salva no diretório atual
+# Salvando o arquivo de áudio
+writeWave(sinal_wav, "sinal_processado_16bits.wav")
 
 ```
 
-<!-- Letra E -->
+<!-- Letra 1.5 -->
 
 O sinal resultante deve ser aberto no software Audacity e tocado. Grave a tela do seu PC de forma a ilustrar o som gerado. Inclua um link do vídeo que você gerou de fora a comprovar a execução desta etapa.
 
-> Vídeo disponível em: 
+> Vídeo disponível em: https://drive.google.com/drive/folders/1gaCO4d0i3ongkWHvBHKrx2MUgXsEpVSz?usp=sharing
 
-<!-- Letra F -->
+<!-- Letra 1.6 -->
 
 > Por que não é possível ouvir o sinal senoidal oscilando a 1 Hz e é possível ouvir o sinal triangular oscilando a 10 Hz?
 
@@ -174,26 +173,30 @@ Isso ocorre porque a onda triangular é composta por múltiplas ondas senoidais 
 
 ```{r}
 
-# Exportando os dados
+# Carregar as bibliotecas necessárias
+library(ggplot2)
+library(dplyr)
 
-q2 <- read.table("C:/Users/heito/Documents/GitHub/PSB/Módulo 6 - PSB/EMG.txt", header = FALSE, "\t")
+# Carregar os dados do arquivo EMG.txt
+q2 <- read.table("E:/GitHub/PSB/Módulo 6 - PSB/EMG.txt", header = FALSE, sep = "\t")
 
-q2 <- dplyr::rename(q2, t = "V1", CH1 = "V2", CH2 = "V3")
+# Renomear as colunas corretamente
+colnames(q2) <- c("t", "CH1", "CH2")
 
-# Criacao de df para os canais
-
+# Criar dataframes para cada canal
 CH1 <- data.frame(x = q2$t, y = q2$CH1, categoria = "CH1")
-CH2 <- data.frame(x = q2$t, y = q2$CH1, categoria = "CH2")
+CH2 <- data.frame(x = q2$t, y = q2$CH2, categoria = "CH2") # Corrigido para CH2
 
+# Unir os dataframes
 canais <- rbind(CH1, CH2)
 
-# Plotagem dos gráficos
+# Gerar o gráfico com janela de visualização entre 2 e 2.5 segundos
 plot <- ggplot(canais, aes(x = x, y = y)) +
   geom_line() +
   facet_wrap(~ categoria, ncol = 1) +
   xlab("Tempo (s)") +
   ylab("Canais") +
-  coord_cartesian(xlim = c(2, 2.5))
+  coord_cartesian(xlim = c(2, 2.5)) # Define os limites do eixo x
 
 plot
 
@@ -205,19 +208,24 @@ plot
 
 ```{r}
 
+# Carregar a biblioteca necessária
 library(BBmisc)
 
+# Definir os limites de normalização para 16 bits
 n0 <- -(2^16)/2
-n1 <- ((2^16)/2) -1
+n1 <- ((2^16)/2) - 1
 
+# Filtrar os dados entre 2 e 2.5 segundos
 CH1_int <- subset(CH1, x >= 2 & x <= 2.5)
 CH2_int <- subset(CH2, x >= 2 & x <= 2.5)
 
+# Obter os valores de amplitude dos canais
 ch1 <- CH1_int$y
 ch2 <- CH2_int$y
 
+# Normalizar os sinais de EMG dentro do intervalo de 16 bits
 ch1_normalizado <- normalize(ch1, method = "range", range = c(n0, n1))
-ch2_normalizado <- normalize(ch1, method = "range", range = c(n0, n1))
+ch2_normalizado <- normalize(ch2, method = "range", range = c(n0, n1)) # Corrigido para ch2
 
 ```
 
@@ -227,21 +235,35 @@ ch2_normalizado <- normalize(ch1, method = "range", range = c(n0, n1))
 
 ```{r}
 
-wav2 <- Wave(left = ch1_normalizado, right = ch2_normalizado, samp.rate = fs, bit = 16)
-writeWave(wav2, "EMG.wav")
+# Carregar a biblioteca necessária
+library(tuneR)
+
+fs <- 1000
+
+# Salvar o sinal EMG em formato wav
+sinal_salvar_wav2 <- Wave(left = ch1_normalizado, 
+                          right = ch2_normalizado, 
+                          samp.rate = fs, 
+                          bit = 16)
+
+# Salvar o arquivo wav
+writeWave(sinal_salvar_wav2, "SinalEMG2.wav")
+
 
 ```
 <!-- Letra D -->
 
 > Abrir o arquivo no software Audacity para visualizar o sinal EMG no formato wav e salvar uma imagem da tela que mostre os sinais, tal como ilustrado na Figura 2. A imagem salva deve ser apresentada no relatório.
 
-COLOCAR PRINT AQUI
+\begin{center}
+\includegraphics[width=0.8\textwidth]{E:/GitHub/PSB/Módulo 6 - PSB/Questao2.4}\\[2cm]
+\end{center}
 
 <!-- Letra E -->
 
 >  Escute os disparos dos potenciais de ação. Para isso execute os passos de 1 a 8 indicados na Figura 3. Você deve gravar a tela com o som e incluir o link do vídeo para avaliação
 
-COLOCAR LINK DO VIDEO AQUI
+> Vídeo disponível em: https://drive.google.com/drive/folders/1LnJtnUDFfZldMk9eshlQJuSz_x_THZTr?usp=sharing
 
 \newpage
 \section*{Questão 3}
@@ -250,23 +272,27 @@ COLOCAR LINK DO VIDEO AQUI
 
 > Utilize o software Audacity para gravar cinco sinais de voz com o comando “sim” e outros cinco sinais com o comando “não”. Faça a rotulação de cada segmento dos comandos de voz, salvando-os em arquivos distintos. No total, dez arquivos devem ser gerados.
 
+\begin{center}
+\includegraphics[width=0.8\textwidth]{E:/GitHub/PSB/Módulo 6 - PSB/SIM NAO/SIMNAO}\\[2cm]
+\end{center}
+
 <!-- Letra B -->
 
 > Para cada sinal calcule as estatísticas: média, variância, coeficiente de assimetria e curtose. Organize os resultados em uma tabela (no R) e estime a variância de cada estatística.
 
-- O comando “sim” é estacionário? Justifique.
-- O comando “sim” é ergódico? Justifique.
-- O comando “não” é estacionário? Justifique.
-- O comando “não” é ergódico? Justifique.
+> O comando “sim” é estacionário? Justifique.
+> O comando “sim” é ergódico? Justifique.
+> O comando “não” é estacionário? Justifique.
+> O comando “não” é ergódico? Justifique.
 
 ```{r}
 
 # Carregando o diretorio
 
-dir <- "C:/Users/heito/Documents/GitHub/PSB/Módulo 6 - PSB"
+dir <- "E:/GitHub/PSB/Módulo 6 - PSB/SIM NAO"
 
 # SIM1
-tfile_SIM1 <- filepath(tdir, "SIM1.wav")
+tfile_SIM1 <- file.path(dir, "SIM1.wav")
 SIM1 <- readWave(tfile_SIM1)
 fs_SIM1 = SIM1@samp.rate
 dt_SIM1 = 1/fs_SIM1 #resolution time in seconds
@@ -277,7 +303,7 @@ t_SIM1 <- seq(from=0, to=tf_SIM1, by=dt_SIM1)
 df_SIM1 <- data.frame(time=t_SIM1, yl_SIM1, yr_SIM1)
 
 # SIM2
-tfile_SIM2 <- file.path(tdir, "SIM2.wav")
+tfile_SIM2 <- file.path(dir, "SIM2.wav")
 SIM2 <- readWave(tfile_SIM2)
 fs_SIM2 = SIM2@samp.rate # sampling frequency in Hz
 dt_SIM2 = 1/fs_SIM2 #resolution time in seconds
@@ -288,7 +314,7 @@ t_SIM2 <- seq(from=0, to=tf_SIM2, by=dt_SIM2)
 df_SIM2 <- data.frame(time=t_SIM2, yl_SIM2, yr_SIM2)
 
 # SIM3
-tfile_SIM3 <- file.path(tdir, "SIM3.wav")
+tfile_SIM3 <- file.path(dir, "SIM3.wav")
 SIM3 <- readWave(tfile_SIM3)
 fs_SIM3 = SIM3@samp.rate # sampling frequency in Hz
 dt_SIM3 = 1/fs_SIM3 #resolution time in seconds
@@ -299,7 +325,7 @@ t_SIM3 <- seq(from=0, to=tf_SIM3, by=dt_SIM3)
 df_SIM3 <- data.frame(time=t_SIM3, yl_SIM3, yr_SIM3)
 
 # SIM4
-tfile_SIM4 <- file.path(tdir, "SIM4.wav")
+tfile_SIM4 <- file.path(dir, "SIM4.wav")
 SIM4 <- readWave(tfile_SIM4)
 fs_SIM4 = SIM4@samp.rate # sampling frequency in Hz
 dt_SIM4 = 1/fs_SIM4 #resolution time in seconds
@@ -310,7 +336,7 @@ t_SIM4 <- seq(from=0, to=tf_SIM4, by=dt_SIM4)
 df_SIM4 <- data.frame(time=t_SIM4, yl_SIM4, yr_SIM4)
 
 # SIM5
-tfile_SIM5 <- file.path(tdir, "SIM5.wav")
+tfile_SIM5 <- file.path(dir, "SIM5.wav")
 SIM5 <- readWave(tfile_SIM5)
 fs_SIM5 = SIM5@samp.rate # sampling frequency in Hz
 dt_SIM5 = 1/fs_SIM5 #resolution time in seconds
@@ -321,7 +347,7 @@ t_SIM5 <- seq(from=0, to=tf_SIM5, by=dt_SIM5)
 df_SIM5 <- data.frame(time=t_SIM5, yl_SIM5, yr_SIM5)
 
 # NAO1
-tfile_NAO1 <- file.path(tdir, "NAO1.wav")
+tfile_NAO1 <- file.path(dir, "NAO1.wav")
 NAO1 <- readWave(tfile_NAO1)
 fs_NAO1 = NAO1@samp.rate # sampling frequency in Hz
 dt_NAO1 = 1/fs_NAO1 #resolution time in seconds
@@ -332,7 +358,7 @@ t_NAO1 <- seq(from=0, to=tf_NAO1, by=dt_NAO1)
 df_NAO1 <- data.frame(time=t_NAO1, yl_NAO1, yr_NAO1)
 
 # NAO2
-tfile_NAO2 <- file.path(tdir, "NAO2.wav")
+tfile_NAO2 <- file.path(dir, "NAO2.wav")
 NAO2 <- readWave(tfile_NAO2)
 fs_NAO2 = NAO2@samp.rate # sampling frequency in Hz
 dt_NAO2 = 1/fs_NAO2 #resolution time in seconds
@@ -343,7 +369,7 @@ t_NAO2 <- seq(from=0, to=tf_NAO2, by=dt_NAO2)
 df_NAO2 <- data.frame(time=t_NAO2, yl_NAO2, yr_NAO2)
 
 # NAO3
-tfile_NAO3 <- file.path(tdir, "NAO3.wav")
+tfile_NAO3 <- file.path(dir, "NAO3.wav")
 NAO3 <- readWave(tfile_NAO3)
 fs_NAO3 = NAO3@samp.rate # sampling frequency in Hz
 dt_NAO3 = 1/fs_NAO3 #resolution time in seconds
@@ -354,7 +380,7 @@ t_NAO3 <- seq(from=0, to=tf_NAO3, by=dt_NAO3)
 df_NAO3 <- data.frame(time=t_NAO3, yl_NAO3, yr_NAO3)
 
 # NAO4
-tfile_NAO4 <- file.path(tdir, "NAO4.wav")
+tfile_NAO4 <- file.path(dir, "NAO4.wav")
 NAO4 <- readWave(tfile_NAO4)
 fs_NAO4 = NAO4@samp.rate # sampling frequency in Hz
 dt_NAO4 = 1/fs_NAO4 #resolution time in seconds
@@ -365,7 +391,7 @@ t_NAO4 <- seq(from=0, to=tf_NAO4, by=dt_NAO4)
 df_NAO4 <- data.frame(time=t_NAO4, yl_NAO4, yr_NAO4)
 
 # NAO5
-tfile_NAO5 <- file.path(tdir, "NAO5.wav")
+tfile_NAO5 <- file.path(dir, "NAO5.wav")
 NAO5 <- readWave(tfile_NAO5)
 fs_NAO5 = NAO5@samp.rate # sampling frequency in Hz
 dt_NAO5 = 1/fs_NAO5 #resolution time in seconds
@@ -453,7 +479,7 @@ dd %>% kbl() %>% kable_styling()
 
 ```
 
-Nota-se que tanto o comando SIM quanto o comando NÃO não apresentam estacionariedade, uma vez que métricas como média, variância, coeficiente de variação e curtose variam entre as amostras. Isso ocorre porque seria necessário que o usuário mantivesse completamente constantes a entonação, o volume, a expressão e outros aspectos da fala. Quanto à ergodicidade, pode-se afirmar que os comandos SIM e NÃO são ergódicos apenas em relação à média e ao coeficiente de variação, pois, conforme demonstrado na tabela, essas métricas tendem a zero.
+Nota-se que tanto o comando SIM quanto o comando NÃO não apresentam estacionariedade, uma vez que métricas como média, variância, coeficiente de variação e curtose variam entre as amostras. Isso ocorre porque seria necessário que o usuário mantivesse completamente constantes a entonação, o volume, a expressão e outros aspectos da fala. Quanto à ergodicidade, pode-se afirmar que os comandos SIM e NÃO não são ergódicos, pois, conforme demonstrado na tabela, essas métricas variam entre valores negativos.
 
 <!-- Letra C -->
 
@@ -463,297 +489,161 @@ Nota-se que tanto o comando SIM quanto o comando NÃO não apresentam estacionar
 
 ```{r}
 
-#comparação entre o sinal SIM1 e restante
-s1_s1 <- ccf(yl_SIM1, yl_SIM1,lag.max = 10000)
+calcular_ccf_max <- function(sinais) {
+  resultados <- matrix(0, nrow = length(sinais), ncol = length(sinais))
+  nomes <- names(sinais)
+  
+  for (i in 1:length(sinais)) {
+    for (j in i:length(sinais)) {
+      ccf_res <- ccf(sinais[[i]], sinais[[j]], lag.max = 10000, plot = FALSE)
+      resultados[i, j] <- max(ccf_res$acf)
+      resultados[j, i] <- resultados[i, j]  # Matriz simétrica
+    }
+  }
+  
+  colnames(resultados) <- nomes
+  rownames(resultados) <- nomes
+  return(resultados)
+}
+
+# Lista de sinais
+sinais <- list(
+  SIM1 = yl_SIM1, SIM2 = yl_SIM2, SIM3 = yl_SIM3, SIM4 = yl_SIM4, SIM5 = yl_SIM5,
+  NAO1 = yl_NAO1, NAO2 = yl_NAO2, NAO3 = yl_NAO3, NAO4 = yl_NAO4, NAO5 = yl_NAO5
+)
+
+# Calcula a matriz de correlação cruzada máxima
+resultado_ccf <- calcular_ccf_max(sinais)
+
+library(ggplot2)
+library(reshape2)
+
+# Converte a matriz de correlação cruzada em um dataframe
+df_ccf <- as.data.frame(resultado_ccf)
+df_ccf$Sinal1 <- rownames(df_ccf)
+
+# Transforma a matriz em formato longo
+df_long <- melt(df_ccf, id.vars = "Sinal1", variable.name = "Sinal2", value.name = "CCF_Max")
+
+# Cria o gráfico de heatmap
+ggplot(df_long, aes(x = Sinal1, y = Sinal2, fill = CCF_Max)) +
+  geom_tile(color = "white") +  # Adiciona os quadrados
+  geom_text(aes(label = round(CCF_Max, 2)), color = "white", size = 4) +  # Coloca os valores dentro dos quadrados
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0.5) +  # Definindo a paleta de cores
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),  # Gira os rótulos no eixo X
+        axis.text.y = element_text(hjust = 1)) +  # Ajusta os rótulos no eixo Y
+  labs(title = "Matriz de Correlação Cruzada Máxima",
+       x = "Sinal1", y = "Sinal2")
+
+```
+
+\newpage
+\section*{Questão 4}
+
+<!-- Letra A -->
+
+> Considerando a avaliação de três grupos neurônios, com as características abaixo:
+
+> E1: média de disparo = 53 ms; desvio padrão = 50 ms
+> E2: média de disparo = 100 ms; desvio padrão = 35 ms
+> E3: média de disparo = 53 ms; desvio padrão = 15 ms
+
+Dica: o intervalo entre disparos é um processo pontual com distribuição gaussina (Utilize a função rnorm do R para gerar os tempos de disparo)
+
+<!-- Letra B -->
+
+> Plote o diagrama de disparos dos três grupos de neurônios, durante 10 segundos, de acordo com as regras dadas na tabela, cujo valores numéricos indicam os tempos de início e término (em segundos) dos disparos dos grupos E1, E2 e E3. Exemplo: O grupo E1 dispara entre 1 e 2 s, entre 5 e 7 s, e permanence em repouso durante todo o intervalo de simulação (de 0 a 10 segundos). A simulação deverá ser feita com uma taxa de amostragem de 10 kHz.
+
+```{r}
+
+# Função para gerar disparos com restrições temporais
+gerar_disparos <- function(media_ms, dp_ms, intervalos_ativos, duracao_total = 10) {
+  tempo_atual <- 0
+  registros <- numeric(0)
+  
+  # Converte parâmetros para segundos
+  media <- media_ms / 1000
+  desvio <- dp_ms / 1000
+  
+  while(tempo_atual < duracao_total) {
+    intervalo <- abs(rnorm(1, media, desvio))
+    tempo_atual <- tempo_atual + intervalo
+    
+    # Verifica intervalos de atividade
+    for(periodo in intervalos_ativos) {
+      if(tempo_atual >= periodo[1] && tempo_atual <= periodo[2]) {
+        registros <- c(registros, tempo_atual)
+        break
+      }
+    }
+  }
+  return(round(registros, 4))
+}
+
+# Parâmetros de disparo (intervalos em segundos)
+disparos_E1 <- gerar_disparos(53, 50, list(c(1,2), c(5,7)))
+disparos_E2 <- gerar_disparos(100, 35, list(c(2,4), c(7,9)))
+disparos_E3 <- gerar_disparos(53, 15, list(c(1,3), c(9,10)))
+
+# Cria grade temporal de 10 kHz
+grade_temporal <- seq(0, 10, 1/10000)
+
+# Função para criar matriz binária de eventos
+criar_matriz_eventos <- function(disparos) {
+  sinais <- numeric(length(grade_temporal))
+  indices <- match(round(disparos, 4), round(grade_temporal, 4))
+  sinais[indices[!is.na(indices)]] <- 1
+  return(data.frame(tempo = grade_temporal, sinal = sinais))
+}
+
+# Gera os dados plotáveis
+dados_plot_E1 <- criar_matriz_eventos(disparos_E1)
+dados_plot_E2 <- criar_matriz_eventos(disparos_E2)
+dados_plot_E3 <- criar_matriz_eventos(disparos_E3)
+
+```
+
+<!-- Letra 4.2 -->
+
+> Gere os histogramas dos intervalos entre disparos para os grupos de neurônios E1, E2 e E3. Devem ser gerados três histogramas (um para cada grupo).
+
+```{r}
+
+# Função para calcular intervalos entre disparos
+calcular_intervalos <- function(disparos) {
+  if(length(disparos) < 2) return(numeric(0))
+  diff(disparos)
+}
+
+# Gera dados para histogramas
+intervalos_E1 <- calcular_intervalos(disparos_E1)
+intervalos_E2 <- calcular_intervalos(disparos_E2)
+intervalos_E3 <- calcular_intervalos(disparos_E3)
+
+# Função unificada para plotagem
+plotar_histograma <- function(dados, titulo, cor = "steelblue") {
+  ggplot(data.frame(Intervalo = dados), aes(x = Intervalo)) +
+    geom_histogram(fill = cor, bins = 15, alpha = 0.8) +
+    labs(title = titulo, x = "Intervalo entre Disparos (s)", y = "Frequência") +
+    theme_minimal() +
+    xlim(0, quantile(dados, 0.95)) # Remove outliers extremos
+}
+
+# Cria e exibe os gráficos
+library(ggplot2)
+print(plotar_histograma(intervalos_E1, "Distribuição de Intervalos - E1", "#FF6B6B"))
 
 ```
 
 ```{r}
 
-sim1_sim1 <- max(s1_s1$acf)
-s1_s2 <- ccf(yl_SIM1, yl_SIM2,lag.max = 10000)
+print(plotar_histograma(intervalos_E2, "Distribuição de Intervalos - E2", "#4ECDC4"))
 
 ```
 
 ```{r}
 
-sim1_sim2 <- max(s1_s2$acf)
-s1_s3 <- ccf(yl_SIM1, yl_SIM3,lag.max = 10000
+print(plotar_histograma(intervalos_E3, "Distribuição de Intervalos - E3", "#45B7D1"))
 
 ```
-
-```{r}
-
-sim1_sim3 <- max(s1_s3$acf)
-s1_s4 <- ccf(yl_SIM1, yl_SIM4,lag.max = 10000)
-
-```
-
-```{r}
-
-sim1_sim4 <- max(s1_s4$acf)
-s1_s5 <- ccf(yl_SIM1, yl_SIM5,lag.max = 10000)
-
-```
-
-```{r}
-
-sim1_sim5 <- max(s1_s5$acf)
-s1_n1 <- ccf(yl_SIM1, yl_NAO1,lag.max = 10000)
-
-```
-
-```{r}
-
-sim1_nao1 <- max(s1_n1$acf)
-s1_n2 <- ccf(yl_SIM1, yl_NAO2,lag.max = 10000)
-
-```
-
-```{r}
-
-sim1_nao2 <- max(s1_n2$acf)
-s1_n3 <- ccf(yl_SIM1, yl_NAO3,lag.max = 10000)
-
-```
-
-```{r}
-
-sim1_nao3 <- max(s1_n3$acf)
-s1_n4<- ccf(yl_SIM1, yl_NAO4,lag.max = 10000)
-
-```
-
-```{r}
-
-sim1_nao4 <- max(s1_n4$acf)
-s1_n5 <- ccf(yl_SIM1, yl_NAO5,lag.max = 10000)
-
-```
-
-```{r}
-
-sim1_nao5 <- max(s1_n5$acf)
-
-# comparando SIM2 com o resto que não foi comparado
-s2_s2 <- ccf(yl_SIM2, yl_SIM2,lag.max = 10000)
-
-```
-
-```{r}
-
-sim2_sim2 <- max(s2_s2$acf)
-s2_s3 <- ccf(yl_SIM2, yl_SIM3,lag.max = 10000
-
-```
-
-```{r}
-
-sim2_sim3 <- max(s2_s3$acf)
-s2_s4 <- ccf(yl_SIM2, yl_SIM4,lag.max = 10000)
-
-```
-
-```{r}
-
-sim2_sim4 <- max(s2_s4$acf)
-s2_s5 <- ccf(yl_SIM2, yl_SIM5,lag.max = 10000)
-
-```
-
-```{r}
-
-sim2_sim5 <- max(s2_s5$acf)
-s2_n1 <- ccf(yl_SIM2, yl_NAO1,lag.max = 10000)
-
-```
-
-```{r}
-
-sim2_nao1 <- max(s2_n1$acf)
-s2_n2 <- ccf(yl_SIM2, yl_NAO2,lag.max = 10000)
-
-```
-
-```{r}
-
-sim2_nao2 <- max(s2_n2$acf)
-s2_n3 <- ccf(yl_SIM2, yl_NAO3,lag.max = 10000
-
-```
-
-```{r}
-
-sim2_nao3 <- max(s2_n3$acf)
-s2_n4 <- ccf(yl_SIM2, yl_NAO4,lag.max = 10000)
-
-```
-
-```{r}
-
-sim2_nao4 <- max(s2_n4$acf)
-s2_n5 <- ccf(yl_SIM2, yl_NAO5,lag.max = 10000)
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
