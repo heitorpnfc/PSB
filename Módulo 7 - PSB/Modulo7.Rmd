@@ -34,7 +34,7 @@ Uberlândia, MG\\
 \newpage
 \section*{Questão 1}
 
-> Letra A
+> Questão 1: Letra A
 
 Gere uma sinal amostrado a partir de uma distribuição normal, com amplitudade variando entre 0 e 1, de duração de 10 s, e amostrado a 5 kHz. Ilustre o processo de janelamento sem sobreposição aplicado a este sinal. A duração de cada janela deverá ser de 500 ms. O sinal gerado, e o instante de início e fim de cada janela deverão ser plotados utilizando-se a biblioteca gráfica dyraphs. Dica: a função dyEvent pode ser utilizada para gerar linhas verticais em instantes desejados. Veja o trecho de código abaixo que ilustra esta situação. O resultado do gráfico gerado deve ser apresentado como parte do relatório.
 
@@ -154,6 +154,8 @@ g
 
 \newpage
 \section*{Questão 2}
+
+> Questão 2
 
 Faça um programa que realize de forma automática a detecção de bursts de atividade eletromiográfica. O sinal eletromiográfico deverá ser gerado de acordo com os seguintes critérios:
 
@@ -283,7 +285,7 @@ g
 \newpage
 \section*{Questão 3}
 
-> Letra A
+> Questão 3: Letra A
 
 Gere uma série temporal formada pela combinação (concatenação temporal) dos seguintes sinais
 básicos:

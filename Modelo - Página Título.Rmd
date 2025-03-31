@@ -22,7 +22,7 @@ GRADUAÇÃO EM ENGENHARIA BIOMÉDICA\\[7cm]
 \Large
 \textbf{Heitor Pereira Nunes Fernandes Cunha}\\[2cm]
 
-\textbf{\large Processamento de Sinais Biomédicos: Módulo 5}\\[10cm]
+\textbf{\large Processamento de Sinais Biomédicos: Módulo 7}\\[10cm]
 
 \large
 Uberlândia, MG\\
