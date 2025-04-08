@@ -1,0 +1,466 @@
+---
+title: " "
+author: " "
+date: " "
+output: 
+  html_document:
+    df_print: paged
+  pdf_document:
+    highlight: tango
+always_allow_html: true
+---
+
+\newpage
+\begin{titlepage}
+\begin{center}
+
+\large
+UNIVERSIDADE FEDERAL DE UBERLÂNDIA\\
+FACULDADE DE ENGENHARIA ELÉTRICA\\
+GRADUAÇÃO EM ENGENHARIA BIOMÉDICA\\[7cm]
+
+\Large
+\textbf{Heitor Pereira Nunes Fernandes Cunha}\\[2cm]
+
+\textbf{\large Processamento de Sinais Biomédicos: Módulo 8}\\[10cm]
+
+\large
+Uberlândia, MG\\
+2025
+
+\end{center}
+\end{titlepage}
+
+\newpage
+\section*{Questão 1}
+
+> Questão 1
+
+Dado a frequência f = 0.3rad/s, calcule os valores de frequência em ciclos/s, rad/amostra e ciclos/amostra. Assuma o valor de fs = 200 Hz.
+
+```{r}
+
+# Definindo os valores
+omega <- 0.3     # Frequência em rad/s
+fs <- 200        # Frequência de amostragem em Hz (amostras/s)
+
+# 1) Frequência em ciclos/s (Hz)
+freq_ciclos_s <- omega / (2 * pi)
+
+# 2) Frequência em rad/amostra
+freq_rad_amostra <- omega / fs
+
+# 3) Frequência em ciclos/amostra
+freq_ciclos_amostra <- freq_ciclos_s / fs
+# ou, equivalentemente:
+# freq_ciclos_amostra <- freq_rad_amostra / (2*pi)
+
+# Exibindo os resultados
+cat("Frequência em ciclos/s (Hz) =", freq_ciclos_s, "ciclos/s\n")
+cat("Frequência em rad/amostra =", freq_rad_amostra, "rad/amostra\n")
+cat("Frequência em ciclos/amostr =", freq_ciclos_amostra, "ciclos/amostra\n")
+
+```
+\newpage
+\section*{Questão 2}
+
+> Questão 2
+
+Gere 5 segundos de um sinal s, que deve ser a soma de dois sinais senoidais, sendo um oscilando a 60 ciclos/s e o outro a 100 ciclos por segundo. Adote a frequência de amostragem de 1,2 kHZ. Aplique a equação recursiva ao sinal se responda às questões abaixo:
+
+y[n] = 1,8523y[n-1] - 0.94833y[n-2] + x[n] - 1.9021x[n-1] + x[n-2]
+
+```{r}
+
+library(dygraphs)
+library(tidyverse)
+
+# Parâmetros de geração do sinal
+fs <- 1200           # Frequência de amostragem (Hz)
+T <- 5               # Duração (s)
+N <- T * fs          # Número total de amostras
+
+# Vetor de tempo
+t <- seq(0, by = 1/fs, length.out = N)
+
+# 2) Gerando o sinal x[n] = sen(2π60t) + sen(2π100t)
+
+f1 <- 60             # 60 Hz
+f2 <- 100            # 100 Hz
+
+# Sinais senoidais
+x1 <- sin(2*pi*f1*t)
+x2 <- sin(2*pi*f2*t)
+
+# Sinal total de entrada
+x <- x1 + x2
+
+# Aplicando a equação recursiva:
+
+# Para armazenar a saída y:
+y <- numeric(N)
+
+for (n in 3:N) {
+  y[n] <- 1.8523 * y[n-1] - 0.94833 * y[n-2] +
+          x[n]     - 1.9021 * x[n-1]   + x[n-2]
+}
+
+# Visualização ou análise de resultados
+
+# Plot do sinal de entrada
+plot(t[1:(fs)], x[1:(fs)], type = "l", 
+     main = "Sinal de entrada x[n] (apenas o primeiro segundo)",
+     xlab = "Tempo (s)", ylab = "Amplitude")
+
+# Plot do sinal de saída
+plot(t[1:(fs)], y[1:(fs)], type = "l", 
+     main = "Saída após a equação recursiva (apenas o primeiro segundo)",
+     xlab = "Tempo (s)", ylab = "Amplitude")
+
+
+```
+
+> Letra A
+
+Qual foi o principal efeito de se aplicar a equação de y[n] sobre o sinal s?
+
+O principal efeito de aplicar a equação recursiva:
+
+y[n] = 1,8523y[n-1] - 0.94833y[n-2] + x[n] - 1.9021x[n-1] + x[n-2], sobre o sinal s (soma das senoides de 60 Hz e 100 Hz) é filtrar essas componentes de frequência de maneira que uma ou ambas sejam atenuadas ou reforçadas, dependendo de como os polos e zeros do filtro (definido pelos coeficientes) afetam cada faixa de frequência; em outras palavras, o filtro modifica a amplitude e a fase das senoides originais, resultando em um sinal de saída que não é mais a simples soma das duas ondas, mas sim uma versão alterada por esse sistema IIR de segunda ordem.
+
+> Letra B
+
+Esboce o diagrama de blocos que ilustre o processador descrito por y[n].
+
+```{r}
+
+utilizar o site draw.io
+
+```
+
+\newpage
+\section*{Questão 3}
+
+> Questão 3
+
+Calcule a resposta ao impulso unitário, h[n], para o processador:
+
+y[n] = y[n−1] + (1/L)x[n] − x[n−L].
+
+```{r}
+
+
+
+```
+
+\newpage
+\section*{Questão 4}
+
+> Questão 4
+
+Gere 5 segundos de um sinal senoidal amostra a 500 Hz, oscilando a 30 Hz, e adicione ruído gaussiano (com amplitude de no máximo 10% ao valor máximo do sinal senoida). Aplique o processador da questão 3 ao sinal resultante. Qual foi o efeito observado? Plote os gráficos do sinal origina, corrompido e processado.
+
+```{r}
+
+library(tuneR)
+
+# Parâmetros gerais
+fs <- 500         # Frequência de amostragem (Hz)
+duracao <- 5      # Duração (s)
+N <- fs * duracao # Número total de amostras
+t <- seq(0, by=1/fs, length.out=N)
+
+f_seno <- 30      # Frequência da senoide (Hz)
+amp_seno <- 1     # Amplitude da senoide
+
+# Gera sinal senoidal
+x_original <- amp_seno * sin(2*pi*f_seno*t)
+
+# Gera ruído branco usando a função noise()
+ruido_obj <- noise(kind = "white", duration = duracao, samp.rate = fs, xunit = "time")
+ruido <- ruido_obj@left 
+ruido <- ruido[1:N]
+
+# Escala o ruído para que seu valor máximo seja 10% do pico da senoide
+# O pico da senoide (amplitude 1) é 1, então 10% = 0.1
+ruido <- ruido / max(abs(ruido)) * 0.1
+
+# Sinal corrompido
+x_corrompido <- x_original + ruido
+
+# Processador:
+L <- 5
+y_processado <- numeric(N)
+
+for(n in 1:N) {
+  if(n == 1) {
+    y_prev <- 0
+  } else {
+    y_prev <- y_processado[n-1]
+  }
+  
+  if((n-L) < 1) {
+    x_nmL <- 0
+  } else {
+    x_nmL <- x_corrompido[n-L]
+  }
+  
+  y_processado[n] <- y_prev + (1/L)*x_corrompido[n] - x_nmL
+}
+
+# 5) Plot dos sinais
+plot(t, x_original, type="l", 
+     main="(A) Sinal Original (30 Hz, 5s, fs=500 Hz)",
+     xlab="Tempo (s)", ylab="Amplitude")
+
+plot(t, x_corrompido, type="l",
+     main="(B) Sinal Corrompido (ruído branco até 10% de amplitude)",
+     xlab="Tempo (s)", ylab="Amplitude")
+
+plot(t, y_processado, type="l",
+     main=paste("(C) Sinal Processado pelo Filtro (L =", L, ")"),
+     xlab="Tempo (s)", ylab="Amplitude")
+
+```
+\newpage
+\section*{Questão 5}
+
+> Questão 5
+
+Calcule a resposta em frequência, H(z) de y[n]=0.5[x(n)+x[n−1]]. Faça o gráfico da amplitude e fase. Que tipo de processador é esse?
+
+```{r}
+
+# Vetor de frequências: -pi a +pi
+N <- 1000
+omega <- seq(-pi, pi, length.out = N)
+
+# H(e^{jω}) = 0.5 + 0.5 e^{-jω}
+H <- 0.5 + 0.5 * exp(-1i * omega)
+
+# Módulo e fase (em radianos)
+H_ampl <- Mod(H)
+H_fase_rad <- Arg(H)
+
+# Converte a fase para graus
+H_fase_deg <- H_fase_rad * 180 / pi
+
+# --- Plot da amplitude ---
+plot(omega, H_ampl, type="l", 
+     main="Resposta em Amplitude",
+     xlab=expression(omega), ylab="Amplitude")
+
+# --- Plot da fase (em graus) ---
+plot(omega, H_fase_deg, type="l",
+     main="Resposta em Fase",
+     xlab=expression(omega), ylab="Fase (graus)")
+
+
+```
+Trata-se de um filtro FIR de 2 coeficientes que efetua a média simples de duas amostras consecutivas (1/2*[x(n)+x(n−1)]). Em termos de resposta em frequência, ele se comporta como um filtro passa-baixas, atenuando as componentes em altas frequências (onde atinge ganho zero em w = pi) e mantém o ganho máximo de w = 0.
+
+\newpage
+\section*{Questão 6}
+
+> Questão 6
+
+Simule três bursts de sinais eletromiográficos em um tempo de 10 s. Cada burst deve ter a duração de 2 segundos. Assuma que o sinal foi amostrado a 1000 Hz. Promova um ganho de 1.2 vezes nos trecho em que há atividade eletromiográfica. Filtre o sinal gerado com um fitro passa-baixa, com frequência de corte de 5 Hz e ordem 3. Faça a comparação entre sinais filtrados pelos filtros Butterworth e Chebyshev. Plote os gráficos dos sinais obtidados e as respostas em frequência dos filtros utilizados. Dicas: (i) para a geração do sinal utilize a função randn. (ii) Para a filtragem do sinal utilize a função filtfilt.
+
+```{r}
+
+# Geração do sinal de 10 segundos
+
+library(signal)
+
+fs <- 1000
+duracao <- 10
+N <- fs * duracao
+t <- seq(0, by=1/fs, length.out = N)
+
+# Gera ruído branco base (background do EMG)
+emg <- rnorm(N, mean=0, sd=1)
+
+# Define intervalos (em segundos) para cada burst:
+# Exemplo: [1..3], [4..6], [7..9] -- total de 3 bursts
+intervalos_burst <- list(c(1,3), c(4,6), c(7,9))
+
+# Aplica ganho de 1.2 apenas nesses intervalos
+for(intervalo in intervalos_burst) {
+  n_inicial <- floor(intervalo[1] * fs) + 1
+  n_final   <- floor(intervalo[2] * fs)
+  emg[n_inicial:n_final] <- 1.2 * emg[n_inicial:n_final]
+}
+
+# Sinal final simulado
+x <- emg
+
+```
+
+```{r}
+
+# Projeto dos filtros passa-baixa
+fc <- 5          # Hz
+f_nyq <- fs / 2
+Wn <- fc / f_nyq  # 5/500 = 0.01
+
+ordem <- 3
+
+# Filtro Butterworth
+bf_butter <- butter(n = ordem, W = Wn, type = "low")
+
+# Filtro Chebyshev
+bf_cheby <- cheby1(n = ordem, Rp = 1, W = Wn, type = "low") 
+
+# Filtragem Butterworth
+y_butter <- filtfilt(bf_butter, x)
+
+# Filtragem Chebyshev
+y_cheby  <- filtfilt(bf_cheby, x)
+
+```
+
+```{r}
+
+# Plotagem
+
+plot(t, x, type="l", 
+     main="Sinal EMG simulado com 3 bursts (ganho=1.2)",
+     xlab="Tempo (s)", ylab="Amplitude")
+
+plot(t, y_butter, type="l",
+     main="EMG Filtrado (Butterworth, fc=5Hz, ordem=3)",
+     xlab="Tempo (s)", ylab="Amplitude")
+
+plot(t, y_cheby, type="l",
+     main="EMG Filtrado (Chebyshev, fc=5Hz, ordem=3, ripple = 1dB)",
+     xlab="Tempo (s)", ylab="Amplitude")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
