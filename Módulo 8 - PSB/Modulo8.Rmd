@@ -84,7 +84,7 @@ N <- T * fs          # Número total de amostras
 # Vetor de tempo
 t <- seq(0, by = 1/fs, length.out = N)
 
-# 2) Gerando o sinal x[n] = sen(2π60t) + sen(2π100t)
+# 2) Gerando o sinal x[n] = sen(2pi60t) + sen(2pi100t)
 
 f1 <- 60             # 60 Hz
 f2 <- 100            # 100 Hz
@@ -130,9 +130,7 @@ O principal efeito de aplicar a equação recursiva: y[n] = 1,8523y[n-1] - 0.948
 
 Esboce o diagrama de blocos que ilustre o processador descrito por y[n].
 
-\begin{center}
-\includegraphics[width=0.8\textwidth]{C:/Users/peten/OneDrive/Área de Trabalho/PET/PSB/Módulo 8 - PSB/Diagrama}\\[2cm]
-\end{center}
+![Diagrama do sistema](Diagrama.jpeg)
 
 \newpage
 \section*{Questão 3}
@@ -297,7 +295,8 @@ ggplot(dados_plot, aes(x = frequencia, y = modulo_db)) +
   labs(title = "Resposta em Frequência (dB)", x = "Frequência (Hz)", y = "Magnitude (dB)")
 
 ```
-Trata-se de um filtro FIR de 2 coeficientes que efetua a média simples de duas amostras consecutivas (1/2*[x(n)+x(n−1)]). Em termos de resposta em frequência, ele se comporta como um filtro passa-baixas, atenuando as componentes em altas frequências (onde atinge ganho zero em w = pi) e mantém o ganho máximo de w = 0.
+
+<br>Trata-se de um filtro FIR de 2 coeficientes que efetua a média simples de duas amostras consecutivas (1/2*[x(n)+x(n−1)]). Em termos de resposta em frequência, ele se comporta como um filtro passa-baixas, atenuando as componentes em altas frequências (onde atinge ganho zero em w = pi) e mantém o ganho máximo de w = 0.
 
 \newpage
 \section*{Questão 6}
@@ -369,7 +368,7 @@ sinal_filtrado_cheby <- filtfilt(filtro_cheby, sinal_emg)
 
 #Sinal filtrado Chebyshev
 dygraph(data.frame(tempo = tempo, Original = sinal_emg, Chebyshev = sinal_filtrado_cheby),
-        main = "Filtro Chebyshev Tipo I") %>%
+        main = "Filtro Chebyshev") %>%
   dySeries("Original", strokeWidth = 1, color = "black") %>%
   dySeries("Chebyshev", strokeWidth = 2, color = "darkgreen") %>%
   dyRangeSelector()
