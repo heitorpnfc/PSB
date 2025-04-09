@@ -61,6 +61,7 @@ cat("Frequência em rad/amostra =", freq_rad_amostra, "rad/amostra\n")
 cat("Frequência em ciclos/amostr =", freq_ciclos_amostra, "ciclos/amostra\n")
 
 ```
+
 \newpage
 \section*{Questão 2}
 
@@ -117,21 +118,20 @@ plot(t[1:(fs)], y[1:(fs)], type = "l",
      main = "Saída após a equação recursiva",
      xlab = "Tempo (s)", ylab = "Amplitude")
 
-
 ```
 
 > Letra A
 
 Qual foi o principal efeito de se aplicar a equação de y[n] sobre o sinal s?
 
-O principal efeito de aplicar a equação recursiva: y[n] = 1,8523y[n-1] - 0.94833y[n-2] + x[n] - 1.9021x[n-1] + x[n-2], sobre o sinal s (soma das senoides de 60 Hz e 100 Hz) é filtrar essas componentes de frequência de maneira que uma ou ambas sejam atenuadas ou reforçadas, dependendo de como os polos e zeros do filtro (definido pelos coeficientes) afetam cada faixa de frequência; em outras palavras, o filtro modifica a amplitude e a fase das senoides originais, resultando em um sinal de saída que não é mais a simples soma das duas ondas, mas sim uma versão alterada por esse sistema IIR de segunda ordem.
+O principal efeito de aplicar a equação recursiva: y[n] = 1,8523y[n-1] - 0.94833y[n-2] + x[n] - 1.9021x[n-1] + x[n-2], sobre o sinal s (soma das senoides de 60 Hz e 100 Hz) é filtrar essas componentes de frequência de maneira que uma ou ambas sejam atenuadas ou reforçadas, dependendo de como os polos e zeros do filtro (definido pelos coeficientes) afetam cada faixa de frequência; em outras palavras, o filtro modifica a amplitude e a fase das senoides originais, resultando em um sinal de saída que não é mais a simples soma das duas ondas, mas sim uma versão alterada por esse sistema de segunda ordem.
 
 > Letra B
 
 Esboce o diagrama de blocos que ilustre o processador descrito por y[n].
 
 \begin{center}
-\includegraphics[width=0.8\textwidth]{E:/GitHub/PSB/Módulo 8 - PSB/Diagrama}\\[2cm]
+\includegraphics[width=0.8\textwidth]{C:/Users/peten/OneDrive/Área de Trabalho/PET/PSB/Módulo 8 - PSB/Diagrama}\\[2cm]
 \end{center}
 
 \newpage
@@ -141,13 +141,17 @@ Esboce o diagrama de blocos que ilustre o processador descrito por y[n].
 
 Calcule a resposta ao impulso unitário, h[n], para o processador:
 
-y[n] = y[n−1] + (1/L)x[n] − x[n−L].
+y[n] = y[n−1] + (1/L)*x[n] − x[n−L].
 
-```{r}
+Para calcular a resposta em frequência, suponhamos que L = 2. Portanto, temos que aplicar afunção δ[n] à entrada do sistema, de forma que:
 
+y[0] = h[0] = 0 + (1/2)*1 - 0 = 1/2  
+y[1] = h[1] = y[1-1] + (1/2)*x[1] - x[1-2] = 1 + 0 + 0 = 1  
+y[2] = h[2] = y[2-1] + (1/2)*x[2] - x[2-2] = 0 + 0 + 1 = 1  
+y[3] = h[3] = y[3-1] + (1/2)*x[3] - x[3-2] = 0 + 0 + 0 = 0  
+y[4] = h[4] = y[4-1] + (1/2)*x[4] - x[4-2] = 0 + 0 + 0 = 0  
 
-
-```
+Sendo assim, a repsosta ao impulso do problema é: [1/2, 1, 1, 0, 0, ...]
 
 \newpage
 \section*{Questão 4}
@@ -158,64 +162,79 @@ Gere 5 segundos de um sinal senoidal amostra a 500 Hz, oscilando a 30 Hz, e adic
 
 ```{r}
 
+# Carregando pacotes necessários
 library(tuneR)
+library(dplyr)
+library(ggplot2)
 
-# Parâmetros gerais
-fs <- 500         # Frequência de amostragem (Hz)
-duracao <- 5      # Duração (s)
-N <- fs * duracao # Número total de amostras
-t <- seq(0, by=1/fs, length.out=N)
+# Parâmetros do sinal
+tempo_final <- 5
+taxa_amostragem <- 500
+frequencia_sinal <- 30
+delta_tempo <- 1 / taxa_amostragem
+vetor_tempo <- seq(0, tempo_final, by = delta_tempo)
 
-f_seno <- 30      # Frequência da senoide (Hz)
-amp_seno <- 1     # Amplitude da senoide
+# Gerando sinal senoidal puro
+sinal_puro <- sin(2 * pi * frequencia_sinal * vetor_tempo)
+df_sinal_puro <- data.frame(tempo = vetor_tempo, valor = sinal_puro, tipo = "Sinal Original")
 
-# Gera sinal senoidal
-x_original <- amp_seno * sin(2*pi*f_seno*t)
+# Gerando ruído branco
+sinal_ruido <- noise(kind = "white", duration = tempo_final + delta_tempo,
+                     samp.rate = taxa_amostragem, xunit = "time")@left
 
-# Gera ruído branco usando a função noise()
-ruido_obj <- noise(kind = "white", duration = duracao, samp.rate = fs, xunit = "time")
-ruido <- ruido_obj@left 
-ruido <- ruido[1:N]
+# Sinal corrompido com ruído
+sinal_ruidoso <- sinal_puro + sinal_ruido
+df_ruidoso <- data.frame(tempo = vetor_tempo, valor = sinal_ruidoso, tipo = "Sinal Corrompido")
 
-# Escala o ruído para que seu valor máximo seja 10% do pico da senoide
-# O pico da senoide (amplitude 1) é 1, então 10% = 0.1
-ruido <- ruido / max(abs(ruido)) * 0.1
+# Preparando estrutura para processamento do sinal
+df_processado <- df_sinal_puro %>%
+  mutate(
+    xn  = valor,
+    xn1 = lag(valor, 1) * (-1.9021),
+    xn2 = lag(valor, 2)
+  )
 
-# Sinal corrompido
-x_corrompido <- x_original + ruido
+# Inicializando vetor de saída processada
+saida_filtrada <- rep(NA, length(vetor_tempo))
+saida_filtrada[1:2] <- 0
 
-# Processador:
-L <- 5
-y_processado <- numeric(N)
-
-for(n in 1:N) {
-  if(n == 1) {
-    y_prev <- 0
-  } else {
-    y_prev <- y_processado[n-1]
-  }
+# Aplicando filtro IIR
+for (i in 3:length(saida_filtrada)) {
+  entrada_sum <- sum(df_processado$xn[i],
+                     df_processado$xn1[i],
+                     df_processado$xn2[i], na.rm = TRUE)
   
-  if((n-L) < 1) {
-    x_nmL <- 0
-  } else {
-    x_nmL <- x_corrompido[n-L]
-  }
-  
-  y_processado[n] <- y_prev + (1/L)*x_corrompido[n] - x_nmL
+  saida_filtrada[i] <- 1.8523 * saida_filtrada[i - 1] -
+                       0.94833 * saida_filtrada[i - 2] +
+                       entrada_sum
 }
 
-# 5) Plot dos sinais
-plot(t, x_original, type="l", 
-     main="(A) Sinal Original (30 Hz, 5s, fs=500 Hz)",
-     xlab="Tempo (s)", ylab="Amplitude")
+# Montando o data frame do sinal processado
+df_final <- data.frame(tempo = vetor_tempo,
+                       valor = saida_filtrada,
+                       tipo = "Sinal Processado")
 
-plot(t, x_corrompido, type="l",
-     main="(B) Sinal Corrompido (ruído branco até 10% de amplitude)",
-     xlab="Tempo (s)", ylab="Amplitude")
+# Combinando todos os sinais para visualização
+df_completo <- bind_rows(
+  df_sinal_puro %>% rename(tempo = tempo, valor = valor) %>% select(tempo, valor, tipo),
+  df_ruidoso,
+  df_final
+)
 
-plot(t, y_processado, type="l",
-     main=paste("(C) Sinal Processado pelo Filtro (L =", L, ")"),
-     xlab="Tempo (s)", ylab="Amplitude")
+# Garantindo a ordem correta dos painéis
+df_completo$tipo <- factor(df_completo$tipo,
+                           levels = c("Sinal Original", "Sinal Corrompido", "Sinal Processado"))
+
+# Criando gráfico em painel (facet)
+painel <- ggplot(df_completo, aes(x = tempo, y = valor)) +
+  geom_line(color = "darkgreen") +
+  facet_wrap(~ tipo, nrow = 3, scales = "free_y") +
+  labs(x = "Tempo (s)", y = "Amplitude") +
+  theme_minimal(base_size = 14)
+
+# Exibindo gráfico
+painel
+
 
 ```
 \newpage
@@ -289,103 +308,81 @@ Simule três bursts de sinais eletromiográficos em um tempo de 10 s. Cada burst
 
 ```{r}
 
-# Carregamento das bibliotecas
-library(pracma)
 library(signal)
-library(ggplot2)
-library(dplyr)
+library(dygraphs)
 
-# Configurações iniciais
-frequencia_amostragem <- 1000
-intervalo_tempo <- 1 / frequencia_amostragem
-tempo <- seq(from = 0, to = 10, by = intervalo_tempo)
+taxa_amostragem <- 1000
+dt <- 1 / taxa_amostragem
+tempo <- seq(0, 10, by = dt)
+duracao <- max(tempo)
+num_bursts <- 3
 
-# Geração de ruído branco (base do sinal)
-sinal_base <- as.vector(randn(n = length(tempo), m = 1))
-dados <- data.frame(tempo)
+onda_base <- square(num_bursts, samp.rate = taxa_amostragem, duration = duracao + dt, xunit = "time")@left
+ruido_burst <- noise(kind = "white", samp.rate = taxa_amostragem, duration = duracao + dt, xunit = "time")@left
+ruido_gauss <- rnorm(length(tempo))
 
-# Definição do burst do EMG
-tempo_burst <- seq(from = 0, to = 2, by = intervalo_tempo)
-constante <- 0.001
-gerar_burst <- function(t) {
-  t * (2 - constante * t) * exp(-constante * t)
-}
-sinal_burst <- gerar_burst(1:10000)
+# Construção do sinal EMG
+sinal_emg <- rep(NA, length(tempo))
+indices_ruido <- which(onda_base == -1.0)
+indices_burst <- which(onda_base > -1.0)
 
-# Interpolação para ajustar ao tempo
-sinal_burst <- spline(x = 1:10000, y = sinal_burst, xout = 1:10000)$y
+# Inserindo ruído gaussiano
+sinal_emg[indices_ruido] <- ruido_gauss[indices_ruido]
 
-# Inserção dos bursts em 2s, 5s e 8s
-pontos_insercao <- c((2/intervalo_tempo + 1), (5/intervalo_tempo + 1), (8/intervalo_tempo + 1))
-dados$burst <- rep(NA, length(tempo))
+# Inserindo bursts
+ganho_burst <- 1.2 * 20
+sinal_emg[indices_burst] <- ruido_burst[indices_burst] * ganho_burst
 
-for (i in 1:3) {
-  inicio <- pontos_insercao[i]
-  fim <- min(inicio + length(sinal_burst) - 1, length(tempo))  # evitar ultrapassar limites
-  comprimento <- fim - inicio + 1
-  dados$burst[inicio:fim] <- sinal_burst[1:comprimento]
-}
+# DataFrame com sinal original
+dados_emg <- data.frame(tempo = tempo, emg = sinal_emg)
 
-# Visualização dos bursts
-ggplot(dados) +
-  geom_line(aes(x = tempo, y = burst)) +
-  theme_bw(base_size = 20) +
-  labs(x = "Tempo (s)", y = "Amplitude dos Bursts")
+# Sinal original
+dygraph(dados_emg, main = "Sinal EMG com Bursts") %>%
+  dyAxis("x", label = "Tempo (s)") %>%
+  dyAxis("y", label = "Amplitude") %>%
+  dyRangeSelector()
 
-# Soma do ruído com os bursts
-dados <- dados %>%
-  mutate(
-    burst = ifelse(is.na(burst), 0, burst),
-    sinal_total = sinal_base + burst
-  )
-
-# Amplificação dos trechos com burst
-for (i in 1:3) {
-  inicio <- pontos_insercao[i]
-  fim <- min(inicio + length(sinal_burst) - 1, nrow(dados))  # evita ultrapassar o limite do data.frame
-  dados$sinal_total[inicio:fim] <- 1.2 * dados$sinal_total[inicio:fim]
-}
-
-# Visualização do sinal completo com bursts amplificados
-ggplot(dados) +
-  geom_line(aes(x = tempo, y = sinal_total)) +
-  theme_bw(base_size = 20) +
-  labs(x = "Tempo(s)", y = "Amplitude com Amplificação")
-
-# Criação do filtro Butterworth (ordem 3, 5 Hz)
+# Filtro Butterworth
 ordem <- 3
-frequencia_corte <- 5
-frequencia_normalizada <- frequencia_corte / (frequencia_amostragem / 2)
+fc <- 5  
+frequencia_normalizada <- fc / (taxa_amostragem / 2)
+
 filtro_butter <- butter(ordem, frequencia_normalizada, type = "low")
-freqz(filt = filtro_butter, Fs = frequencia_amostragem)
+freqz(filt = filtro_butter, Fs = taxa_amostragem)
 
-# Criação do filtro Chebyshev Tipo I (ordem 3, 5 Hz, ripple 0.5 dB)
-ripple <- 0.5
+sinal_filtrado_butter <- filtfilt(filtro_butter, sinal_emg)
+dados_butter <- data.frame(tempo = tempo, sinal = sinal_filtrado_butter)
+
+# Sinal filtrado Butterworth
+dygraph(data.frame(tempo = tempo, Original = sinal_emg, Butterworth = sinal_filtrado_butter),
+        main = "Filtro Butterworth") %>%
+  dySeries("Original", strokeWidth = 1, color = "black") %>%
+  dySeries("Butterworth", strokeWidth = 2, color = "orange") %>%
+  dyRangeSelector()
+
+# Filtro Chebyshev
+ripple <- 0.5  
 filtro_cheby <- cheby1(ordem, ripple, frequencia_normalizada, type = "low")
-freqz(filt = filtro_cheby, Fs = frequencia_amostragem)
+freqz(filt = filtro_cheby, Fs = taxa_amostragem)
 
-# Aplicação dos filtros
-dados$sinal_butter <- filtfilt(filt = filtro_butter, dados$sinal_total)
-dados$sinal_cheby <- filtfilt(filt = filtro_cheby, dados$sinal_total)
+sinal_filtrado_cheby <- filtfilt(filtro_cheby, sinal_emg)
 
-# Gráfico comparativo dos sinais
-cores <- c("Original" = "black", "Butterworth" = "darkorange", "Chebyshev" = "darkgreen")
-ggplot(data.frame()) +
-  geom_line(data = dados, aes(x = tempo, y = sinal_total, color = "Original")) +
-  geom_line(data = dados, aes(x = tempo, y = sinal_butter, color = "Butterworth")) +
-  geom_line(data = dados, aes(x = tempo, y = sinal_cheby, color = "Chebyshev")) +
-  theme_bw(base_size = 20) +
-  labs(x = "Tempo(s)", y = "Amplitude do Sinal", color = "Tipo de Sinal") +
-  scale_color_manual(values = cores)
+#Sinal filtrado Chebyshev
+dygraph(data.frame(tempo = tempo, Original = sinal_emg, Chebyshev = sinal_filtrado_cheby),
+        main = "Filtro Chebyshev Tipo I") %>%
+  dySeries("Original", strokeWidth = 1, color = "black") %>%
+  dySeries("Chebyshev", strokeWidth = 2, color = "darkgreen") %>%
+  dyRangeSelector()
 
-# Zoom no primeiro burst (0 a 3 segundos)
-ggplot(data.frame()) +
-  geom_line(data = dados, aes(x = tempo, y = sinal_total, color = "Original")) +
-  geom_line(data = dados, aes(x = tempo, y = sinal_butter, color = "Butterworth")) +
-  geom_line(data = dados, aes(x = tempo, y = sinal_cheby, color = "Chebyshev")) +
-  theme_bw(base_size = 20) +
-  coord_cartesian(xlim = c(0, 3)) +
-  labs(x = "Tempo(s)", y = "Amplitude do Sinal", color = "Tipo de Sinal") +
-  scale_color_manual(values = cores)
+# Comparação Butterworth e Chebyshev
+dygraph(data.frame(tempo = tempo,
+                   Butterworth = sinal_filtrado_butter,
+                   Chebyshev = sinal_filtrado_cheby),
+        main = "Comparação entre Filtros") %>%
+  dySeries("Butterworth", strokeWidth = 2, color = "red") %>%
+  dySeries("Chebyshev", strokeWidth = 2, color = "blue") %>%
+  dyRangeSelector()
+
+
 
 ```

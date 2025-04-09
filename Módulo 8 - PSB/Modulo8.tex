@@ -1,0 +1,774 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{\vspace{-2.5em}}
+
+\begin{document}
+
+\newpage
+\begin{titlepage}
+\begin{center}
+
+\large
+UNIVERSIDADE FEDERAL DE UBERLÂNDIA\\
+FACULDADE DE ENGENHARIA ELÉTRICA\\
+GRADUAÇÃO EM ENGENHARIA BIOMÉDICA\\[7cm]
+
+\Large
+\textbf{Heitor Pereira Nunes Fernandes Cunha}\\[2cm]
+
+\textbf{\large Processamento de Sinais Biomédicos: Módulo 8}\\[10cm]
+
+\large
+Uberlândia, MG\\
+2025
+
+\end{center}
+\end{titlepage}
+
+\newpage
+\section*{Questão 1}
+
+\begin{quote}
+Questão 1
+\end{quote}
+
+Dado a frequência f = 0.3rad/s, calcule os valores de frequência em
+ciclos/s, rad/amostra e ciclos/amostra. Assuma o valor de fs = 200 Hz.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Definindo os valores}
+\NormalTok{omega }\OtherTok{\textless{}{-}} \FloatTok{0.3}     \CommentTok{\# Frequência em rad/s}
+\NormalTok{fs }\OtherTok{\textless{}{-}} \DecValTok{200}        \CommentTok{\# Frequência de amostragem em Hz (amostras/s)}
+
+\CommentTok{\# 1) Frequência em ciclos/s (Hz)}
+\NormalTok{freq\_ciclos\_s }\OtherTok{\textless{}{-}}\NormalTok{ omega }\SpecialCharTok{/}\NormalTok{ (}\DecValTok{2} \SpecialCharTok{*}\NormalTok{ pi)}
+
+\CommentTok{\# 2) Frequência em rad/amostra}
+\NormalTok{freq\_rad\_amostra }\OtherTok{\textless{}{-}}\NormalTok{ omega }\SpecialCharTok{/}\NormalTok{ fs}
+
+\CommentTok{\# 3) Frequência em ciclos/amostra}
+\NormalTok{freq\_ciclos\_amostra }\OtherTok{\textless{}{-}}\NormalTok{ freq\_ciclos\_s }\SpecialCharTok{/}\NormalTok{ fs}
+\CommentTok{\# ou, equivalentemente:}
+\CommentTok{\# freq\_ciclos\_amostra \textless{}{-} freq\_rad\_amostra / (2*pi)}
+
+\CommentTok{\# Exibindo os resultados}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Frequência em ciclos/s (Hz) ="}\NormalTok{, freq\_ciclos\_s, }\StringTok{"ciclos/s}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Frequência em ciclos/s (Hz) = 0.04774648 ciclos/s
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Frequência em rad/amostra ="}\NormalTok{, freq\_rad\_amostra, }\StringTok{"rad/amostra}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Frequência em rad/amostra = 0.0015 rad/amostra
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Frequência em ciclos/amostr ="}\NormalTok{, freq\_ciclos\_amostra, }\StringTok{"ciclos/amostra}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Frequência em ciclos/amostr = 0.0002387324 ciclos/amostra
+\end{verbatim}
+
+\newpage
+\section*{Questão 2}
+
+\begin{quote}
+Questão 2
+\end{quote}
+
+Gere 5 segundos de um sinal s, que deve ser a soma de dois sinais
+senoidais, sendo um oscilando a 60 ciclos/s e o outro a 100 ciclos por
+segundo. Adote a frequência de amostragem de 1,2 kHZ. Aplique a equação
+recursiva ao sinal se responda às questões abaixo:
+
+y{[}n{]} = 1,8523y{[}n-1{]} - 0.94833y{[}n-2{]} + x{[}n{]} -
+1.9021x{[}n-1{]} + x{[}n-2{]}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(dygraphs)}
+\FunctionTok{library}\NormalTok{(tidyverse)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## -- Attaching core tidyverse packages ------------------------ tidyverse 2.0.0 --
+## v dplyr     1.1.4     v readr     2.1.5
+## v forcats   1.0.0     v stringr   1.5.1
+## v ggplot2   3.5.1     v tibble    3.2.1
+## v lubridate 1.9.3     v tidyr     1.3.1
+## v purrr     1.0.2     
+## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()
+## i Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Parâmetros de geração do sinal}
+\NormalTok{fs }\OtherTok{\textless{}{-}} \DecValTok{1200}           \CommentTok{\# Frequência de amostragem (Hz)}
+\NormalTok{T }\OtherTok{\textless{}{-}} \DecValTok{5}               \CommentTok{\# Duração (s)}
+\NormalTok{N }\OtherTok{\textless{}{-}}\NormalTok{ T }\SpecialCharTok{*}\NormalTok{ fs          }\CommentTok{\# Número total de amostras}
+
+\CommentTok{\# Vetor de tempo}
+\NormalTok{t }\OtherTok{\textless{}{-}} \FunctionTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{, }\AttributeTok{by =} \DecValTok{1}\SpecialCharTok{/}\NormalTok{fs, }\AttributeTok{length.out =}\NormalTok{ N)}
+
+\CommentTok{\# 2) Gerando o sinal x[n] = sen(2π60t) + sen(2π100t)}
+
+\NormalTok{f1 }\OtherTok{\textless{}{-}} \DecValTok{60}             \CommentTok{\# 60 Hz}
+\NormalTok{f2 }\OtherTok{\textless{}{-}} \DecValTok{100}            \CommentTok{\# 100 Hz}
+
+\CommentTok{\# Sinais senoidais}
+\NormalTok{x1 }\OtherTok{\textless{}{-}} \FunctionTok{sin}\NormalTok{(}\DecValTok{2}\SpecialCharTok{*}\NormalTok{pi}\SpecialCharTok{*}\NormalTok{f1}\SpecialCharTok{*}\NormalTok{t)}
+\NormalTok{x2 }\OtherTok{\textless{}{-}} \FunctionTok{sin}\NormalTok{(}\DecValTok{2}\SpecialCharTok{*}\NormalTok{pi}\SpecialCharTok{*}\NormalTok{f2}\SpecialCharTok{*}\NormalTok{t)}
+
+\CommentTok{\# Sinal total de entrada}
+\NormalTok{x }\OtherTok{\textless{}{-}}\NormalTok{ x1 }\SpecialCharTok{+}\NormalTok{ x2}
+
+\CommentTok{\# Aplicando a equação recursiva:}
+
+\CommentTok{\# Para armazenar a saída y:}
+\NormalTok{y }\OtherTok{\textless{}{-}} \FunctionTok{numeric}\NormalTok{(N)}
+
+\ControlFlowTok{for}\NormalTok{ (n }\ControlFlowTok{in} \DecValTok{3}\SpecialCharTok{:}\NormalTok{N) \{}
+\NormalTok{  y[n] }\OtherTok{\textless{}{-}} \FloatTok{1.8523} \SpecialCharTok{*}\NormalTok{ y[n}\DecValTok{{-}1}\NormalTok{] }\SpecialCharTok{{-}} \FloatTok{0.94833} \SpecialCharTok{*}\NormalTok{ y[n}\DecValTok{{-}2}\NormalTok{] }\SpecialCharTok{+}
+\NormalTok{          x[n]     }\SpecialCharTok{{-}} \FloatTok{1.9021} \SpecialCharTok{*}\NormalTok{ x[n}\DecValTok{{-}1}\NormalTok{]   }\SpecialCharTok{+}\NormalTok{ x[n}\DecValTok{{-}2}\NormalTok{]}
+\NormalTok{\}}
+
+\CommentTok{\# Visualização ou análise de resultados}
+
+\CommentTok{\# Plot do sinal de entrada}
+\FunctionTok{plot}\NormalTok{(t[}\DecValTok{1}\SpecialCharTok{:}\NormalTok{(fs)], x[}\DecValTok{1}\SpecialCharTok{:}\NormalTok{(fs)], }\AttributeTok{type =} \StringTok{"l"}\NormalTok{, }
+     \AttributeTok{main =} \StringTok{"Sinal de entrada x[n]"}\NormalTok{,}
+     \AttributeTok{xlab =} \StringTok{"Tempo (s)"}\NormalTok{, }\AttributeTok{ylab =} \StringTok{"Amplitude"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Modulo8_files/figure-latex/unnamed-chunk-2-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Plot do sinal de saída}
+\FunctionTok{plot}\NormalTok{(t[}\DecValTok{1}\SpecialCharTok{:}\NormalTok{(fs)], y[}\DecValTok{1}\SpecialCharTok{:}\NormalTok{(fs)], }\AttributeTok{type =} \StringTok{"l"}\NormalTok{, }
+     \AttributeTok{main =} \StringTok{"Saída após a equação recursiva"}\NormalTok{,}
+     \AttributeTok{xlab =} \StringTok{"Tempo (s)"}\NormalTok{, }\AttributeTok{ylab =} \StringTok{"Amplitude"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Modulo8_files/figure-latex/unnamed-chunk-2-2.pdf}
+
+\begin{quote}
+Letra A
+\end{quote}
+
+Qual foi o principal efeito de se aplicar a equação de y{[}n{]} sobre o
+sinal s?
+
+O principal efeito de aplicar a equação recursiva: y{[}n{]} =
+1,8523y{[}n-1{]} - 0.94833y{[}n-2{]} + x{[}n{]} - 1.9021x{[}n-1{]} +
+x{[}n-2{]}, sobre o sinal s (soma das senoides de 60 Hz e 100 Hz) é
+filtrar essas componentes de frequência de maneira que uma ou ambas
+sejam atenuadas ou reforçadas, dependendo de como os polos e zeros do
+filtro (definido pelos coeficientes) afetam cada faixa de frequência; em
+outras palavras, o filtro modifica a amplitude e a fase das senoides
+originais, resultando em um sinal de saída que não é mais a simples soma
+das duas ondas, mas sim uma versão alterada por esse sistema de segunda
+ordem.
+
+\begin{quote}
+Letra B
+\end{quote}
+
+Esboce o diagrama de blocos que ilustre o processador descrito por
+y{[}n{]}.
+
+\begin{center}
+\includegraphics[width=0.8\textwidth]{C:/Users/peten/OneDrive/Área de Trabalho/PET/PSB/Módulo 8 - PSB}\\[2cm]
+\end{center}
+
+\newpage
+\section*{Questão 3}
+
+\begin{quote}
+Questão 3
+\end{quote}
+
+Calcule a resposta ao impulso unitário, h{[}n{]}, para o processador:
+
+y{[}n{]} = y{[}n−1{]} + (1/L)x{[}n{]} − x{[}n−L{]}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Definição dos parâmetros principais}
+\NormalTok{tamanho\_janela }\OtherTok{\textless{}{-}} \DecValTok{4}
+\NormalTok{num\_pontos }\OtherTok{\textless{}{-}} \DecValTok{20}
+
+\CommentTok{\# Criando vetor de entrada com impulso unitário}
+\NormalTok{sinal\_entrada }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{, num\_pontos)}
+\NormalTok{sinal\_entrada[}\DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}} \DecValTok{1}
+
+\CommentTok{\# Inicializando vetor de saída}
+\NormalTok{resposta\_impulso }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{, num\_pontos)}
+
+\CommentTok{\# Computando resposta do sistema discreto}
+\ControlFlowTok{for}\NormalTok{ (k }\ControlFlowTok{in} \FunctionTok{seq}\NormalTok{(}\DecValTok{2}\NormalTok{, num\_pontos)) \{}
+\NormalTok{  valor\_atual }\OtherTok{\textless{}{-}} \ControlFlowTok{if}\NormalTok{ (k }\SpecialCharTok{\textless{}=} \FunctionTok{length}\NormalTok{(sinal\_entrada)) sinal\_entrada[k] }\ControlFlowTok{else} \DecValTok{0}
+\NormalTok{  valor\_passado }\OtherTok{\textless{}{-}} \ControlFlowTok{if}\NormalTok{ (k }\SpecialCharTok{{-}}\NormalTok{ tamanho\_janela }\SpecialCharTok{\textgreater{}=} \DecValTok{1}\NormalTok{) sinal\_entrada[k }\SpecialCharTok{{-}}\NormalTok{ tamanho\_janela] }\ControlFlowTok{else} \DecValTok{0}
+\NormalTok{  resposta\_impulso[k] }\OtherTok{\textless{}{-}}\NormalTok{ resposta\_impulso[k }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{] }\SpecialCharTok{+}\NormalTok{ (valor\_atual }\SpecialCharTok{/}\NormalTok{ tamanho\_janela) }\SpecialCharTok{{-}}\NormalTok{ valor\_passado}
+\NormalTok{\}}
+
+\CommentTok{\# Organizando dados para visualização}
+\NormalTok{indices }\OtherTok{\textless{}{-}} \FunctionTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{, num\_pontos }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{)}
+\NormalTok{dados\_grafico }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\AttributeTok{indice =}\NormalTok{ indices, }\AttributeTok{saida =}\NormalTok{ resposta\_impulso)}
+
+\CommentTok{\# Gerando o gráfico com ggplot2}
+\FunctionTok{library}\NormalTok{(ggplot2)}
+
+\FunctionTok{ggplot}\NormalTok{(dados\_grafico, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ indice, }\AttributeTok{y =}\NormalTok{ saida)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_linerange}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{ymin =} \DecValTok{0}\NormalTok{, }\AttributeTok{ymax =}\NormalTok{ saida), }\AttributeTok{color =} \StringTok{"darkgreen"}\NormalTok{, }\AttributeTok{size =} \FloatTok{1.3}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{color =} \StringTok{"darkorange"}\NormalTok{, }\AttributeTok{size =} \FloatTok{3.2}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_light}\NormalTok{(}\AttributeTok{base\_size =} \DecValTok{15}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}
+    \AttributeTok{title =} \FunctionTok{bquote}\NormalTok{(}\StringTok{"h[n]: Resposta ao Impulso para Janela"} \SpecialCharTok{\textasciitilde{}}\NormalTok{ L }\SpecialCharTok{==}\NormalTok{ .(tamanho\_janela)),}
+    \AttributeTok{x =} \StringTok{"n (instante discreto)"}\NormalTok{,}
+    \AttributeTok{y =} \StringTok{"h[n]"}
+\NormalTok{  ) }\SpecialCharTok{+}
+  \FunctionTok{scale\_x\_continuous}\NormalTok{(}\AttributeTok{breaks =} \DecValTok{0}\SpecialCharTok{:}\NormalTok{(num\_pontos }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+## i Please use `linewidth` instead.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+## generated.
+\end{verbatim}
+
+\includegraphics{Modulo8_files/figure-latex/unnamed-chunk-3-1.pdf}
+
+\newpage
+\section*{Questão 4}
+
+\begin{quote}
+Questão 4
+\end{quote}
+
+Gere 5 segundos de um sinal senoidal amostra a 500 Hz, oscilando a 30
+Hz, e adicione ruído gaussiano (com amplitude de no máximo 10\% ao valor
+máximo do sinal senoida). Aplique o processador da questão 3 ao sinal
+resultante. Qual foi o efeito observado? Plote os gráficos do sinal
+origina, corrompido e processado.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(tuneR)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning: pacote 'tuneR' foi compilado no R versão 4.4.3
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Parâmetros gerais}
+\NormalTok{fs }\OtherTok{\textless{}{-}} \DecValTok{500}         \CommentTok{\# Frequência de amostragem (Hz)}
+\NormalTok{duracao }\OtherTok{\textless{}{-}} \DecValTok{5}      \CommentTok{\# Duração (s)}
+\NormalTok{N }\OtherTok{\textless{}{-}}\NormalTok{ fs }\SpecialCharTok{*}\NormalTok{ duracao }\CommentTok{\# Número total de amostras}
+\NormalTok{t }\OtherTok{\textless{}{-}} \FunctionTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{, }\AttributeTok{by=}\DecValTok{1}\SpecialCharTok{/}\NormalTok{fs, }\AttributeTok{length.out=}\NormalTok{N)}
+
+\NormalTok{f\_seno }\OtherTok{\textless{}{-}} \DecValTok{30}      \CommentTok{\# Frequência da senoide (Hz)}
+\NormalTok{amp\_seno }\OtherTok{\textless{}{-}} \DecValTok{1}     \CommentTok{\# Amplitude da senoide}
+
+\CommentTok{\# Gera sinal senoidal}
+\NormalTok{x\_original }\OtherTok{\textless{}{-}}\NormalTok{ amp\_seno }\SpecialCharTok{*} \FunctionTok{sin}\NormalTok{(}\DecValTok{2}\SpecialCharTok{*}\NormalTok{pi}\SpecialCharTok{*}\NormalTok{f\_seno}\SpecialCharTok{*}\NormalTok{t)}
+
+\CommentTok{\# Gera ruído branco usando a função noise()}
+\NormalTok{ruido\_obj }\OtherTok{\textless{}{-}} \FunctionTok{noise}\NormalTok{(}\AttributeTok{kind =} \StringTok{"white"}\NormalTok{, }\AttributeTok{duration =}\NormalTok{ duracao, }\AttributeTok{samp.rate =}\NormalTok{ fs, }\AttributeTok{xunit =} \StringTok{"time"}\NormalTok{)}
+\NormalTok{ruido }\OtherTok{\textless{}{-}}\NormalTok{ ruido\_obj}\SpecialCharTok{@}\NormalTok{left }
+\NormalTok{ruido }\OtherTok{\textless{}{-}}\NormalTok{ ruido[}\DecValTok{1}\SpecialCharTok{:}\NormalTok{N]}
+
+\CommentTok{\# Escala o ruído para que seu valor máximo seja 10\% do pico da senoide}
+\CommentTok{\# O pico da senoide (amplitude 1) é 1, então 10\% = 0.1}
+\NormalTok{ruido }\OtherTok{\textless{}{-}}\NormalTok{ ruido }\SpecialCharTok{/} \FunctionTok{max}\NormalTok{(}\FunctionTok{abs}\NormalTok{(ruido)) }\SpecialCharTok{*} \FloatTok{0.1}
+
+\CommentTok{\# Sinal corrompido}
+\NormalTok{x\_corrompido }\OtherTok{\textless{}{-}}\NormalTok{ x\_original }\SpecialCharTok{+}\NormalTok{ ruido}
+
+\CommentTok{\# Processador:}
+\NormalTok{L }\OtherTok{\textless{}{-}} \DecValTok{5}
+\NormalTok{y\_processado }\OtherTok{\textless{}{-}} \FunctionTok{numeric}\NormalTok{(N)}
+
+\ControlFlowTok{for}\NormalTok{(n }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{N) \{}
+  \ControlFlowTok{if}\NormalTok{(n }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) \{}
+\NormalTok{    y\_prev }\OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{  \} }\ControlFlowTok{else}\NormalTok{ \{}
+\NormalTok{    y\_prev }\OtherTok{\textless{}{-}}\NormalTok{ y\_processado[n}\DecValTok{{-}1}\NormalTok{]}
+\NormalTok{  \}}
+  
+  \ControlFlowTok{if}\NormalTok{((n}\SpecialCharTok{{-}}\NormalTok{L) }\SpecialCharTok{\textless{}} \DecValTok{1}\NormalTok{) \{}
+\NormalTok{    x\_nmL }\OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{  \} }\ControlFlowTok{else}\NormalTok{ \{}
+\NormalTok{    x\_nmL }\OtherTok{\textless{}{-}}\NormalTok{ x\_corrompido[n}\SpecialCharTok{{-}}\NormalTok{L]}
+\NormalTok{  \}}
+  
+\NormalTok{  y\_processado[n] }\OtherTok{\textless{}{-}}\NormalTok{ y\_prev }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{/}\NormalTok{L)}\SpecialCharTok{*}\NormalTok{x\_corrompido[n] }\SpecialCharTok{{-}}\NormalTok{ x\_nmL}
+\NormalTok{\}}
+
+\CommentTok{\# 5) Plot dos sinais}
+\FunctionTok{plot}\NormalTok{(t, x\_original, }\AttributeTok{type=}\StringTok{"l"}\NormalTok{, }
+     \AttributeTok{main=}\StringTok{"(A) Sinal Original (30 Hz, 5s, fs=500 Hz)"}\NormalTok{,}
+     \AttributeTok{xlab=}\StringTok{"Tempo (s)"}\NormalTok{, }\AttributeTok{ylab=}\StringTok{"Amplitude"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Modulo8_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(t, x\_corrompido, }\AttributeTok{type=}\StringTok{"l"}\NormalTok{,}
+     \AttributeTok{main=}\StringTok{"(B) Sinal Corrompido (ruído branco até 10\% de amplitude)"}\NormalTok{,}
+     \AttributeTok{xlab=}\StringTok{"Tempo (s)"}\NormalTok{, }\AttributeTok{ylab=}\StringTok{"Amplitude"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Modulo8_files/figure-latex/unnamed-chunk-4-2.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(t, y\_processado, }\AttributeTok{type=}\StringTok{"l"}\NormalTok{,}
+     \AttributeTok{main=}\FunctionTok{paste}\NormalTok{(}\StringTok{"(C) Sinal Processado pelo Filtro (L ="}\NormalTok{, L, }\StringTok{")"}\NormalTok{),}
+     \AttributeTok{xlab=}\StringTok{"Tempo (s)"}\NormalTok{, }\AttributeTok{ylab=}\StringTok{"Amplitude"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Modulo8_files/figure-latex/unnamed-chunk-4-3.pdf}
+\newpage
+
+\section*{Questão 5}
+
+\begin{quote}
+Questão 5
+\end{quote}
+
+Calcule a resposta em frequência, H(z) de
+y{[}n{]}=0.5{[}x(n)+x{[}n−1{]}{]}. Faça o gráfico da amplitude e fase.
+Que tipo de processador é esse?
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Carregar bibliotecas necessárias}
+\FunctionTok{library}\NormalTok{(signal)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning: pacote 'signal' foi compilado no R versão 4.4.3
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Anexando pacote: 'signal'
+\end{verbatim}
+
+\begin{verbatim}
+## O seguinte objeto é mascarado por 'package:dplyr':
+## 
+##     filter
+\end{verbatim}
+
+\begin{verbatim}
+## Os seguintes objetos são mascarados por 'package:stats':
+## 
+##     filter, poly
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(REdaS)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning: pacote 'REdaS' foi compilado no R versão 4.4.3
+\end{verbatim}
+
+\begin{verbatim}
+## Carregando pacotes exigidos: grid
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(ggplot2)}
+
+\NormalTok{numerador }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\FloatTok{0.5}\NormalTok{, }\FloatTok{0.5}\NormalTok{)}
+\NormalTok{denominador }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{)}
+\NormalTok{taxa\_amostragem }\OtherTok{\textless{}{-}} \DecValTok{500}
+
+\CommentTok{\# Calcular a resposta em frequência do filtro}
+\NormalTok{resposta\_freq }\OtherTok{\textless{}{-}} \FunctionTok{freqz}\NormalTok{(numerador, denominador, }\AttributeTok{Fs =}\NormalTok{ taxa\_amostragem)}
+
+\CommentTok{\# Obter módulo da resposta em frequência}
+\NormalTok{modulo }\OtherTok{\textless{}{-}} \FunctionTok{Mod}\NormalTok{(resposta\_freq}\SpecialCharTok{$}\NormalTok{h)}
+
+\CommentTok{\# Calcular fase em radianos e converter para graus}
+\NormalTok{fase\_rad }\OtherTok{\textless{}{-}} \FunctionTok{Arg}\NormalTok{(resposta\_freq}\SpecialCharTok{$}\NormalTok{h)}
+\NormalTok{fase\_graus }\OtherTok{\textless{}{-}} \FunctionTok{rad2deg}\NormalTok{(fase\_rad)}
+
+\CommentTok{\# Converter módulo para escala decibéis}
+\NormalTok{modulo\_db }\OtherTok{\textless{}{-}} \DecValTok{20} \SpecialCharTok{*} \FunctionTok{log10}\NormalTok{(modulo)}
+
+\CommentTok{\# Criar dataframe com os resultados para visualização}
+\NormalTok{dados\_plot }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{frequencia =}\NormalTok{ resposta\_freq}\SpecialCharTok{$}\NormalTok{f,}
+  \AttributeTok{resposta\_complexa =}\NormalTok{ resposta\_freq}\SpecialCharTok{$}\NormalTok{h,}
+\NormalTok{  fase\_rad,}
+\NormalTok{  fase\_graus,}
+\NormalTok{  modulo,}
+\NormalTok{  modulo\_db}
+\NormalTok{)}
+
+\CommentTok{\# Gráfico do módulo}
+\FunctionTok{ggplot}\NormalTok{(dados\_plot, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ frequencia, }\AttributeTok{y =}\NormalTok{ modulo)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme\_classic}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Módulo da Resposta em Frequência"}\NormalTok{, }\AttributeTok{x =} \StringTok{"Frequência (Hz)"}\NormalTok{, }\AttributeTok{y =} \StringTok{"|H(f)|"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Modulo8_files/figure-latex/unnamed-chunk-5-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Gráfico da fase em graus}
+\FunctionTok{ggplot}\NormalTok{(dados\_plot, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ frequencia, }\AttributeTok{y =}\NormalTok{ fase\_graus)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme\_classic}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Fase da Resposta em Frequência"}\NormalTok{, }\AttributeTok{x =} \StringTok{"Frequência (Hz)"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Fase (graus)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Modulo8_files/figure-latex/unnamed-chunk-5-2.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Gráfico do módulo em decibéis}
+\FunctionTok{ggplot}\NormalTok{(dados\_plot, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ frequencia, }\AttributeTok{y =}\NormalTok{ modulo\_db)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme\_classic}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Resposta em Frequência (dB)"}\NormalTok{, }\AttributeTok{x =} \StringTok{"Frequência (Hz)"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Magnitude (dB)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Modulo8_files/figure-latex/unnamed-chunk-5-3.pdf}
+Trata-se de um filtro FIR de 2 coeficientes que efetua a média simples
+de duas amostras consecutivas (1/2*{[}x(n)+x(n−1){]}). Em termos de
+resposta em frequência, ele se comporta como um filtro passa-baixas,
+atenuando as componentes em altas frequências (onde atinge ganho zero em
+w = pi) e mantém o ganho máximo de w = 0.
+
+\newpage
+\section*{Questão 6}
+
+\begin{quote}
+Questão 6
+\end{quote}
+
+Simule três bursts de sinais eletromiográficos em um tempo de 10 s. Cada
+burst deve ter a duração de 2 segundos. Assuma que o sinal foi amostrado
+a 1000 Hz. Promova um ganho de 1.2 vezes nos trecho em que há atividade
+eletromiográfica. Filtre o sinal gerado com um fitro passa-baixa, com
+frequência de corte de 5 Hz e ordem 3. Faça a comparação entre sinais
+filtrados pelos filtros Butterworth e Chebyshev. Plote os gráficos dos
+sinais obtidados e as respostas em frequência dos filtros utilizados.
+Dicas: (i) para a geração do sinal utilize a função randn. (ii) Para a
+filtragem do sinal utilize a função filtfilt.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Carregamento das bibliotecas}
+\FunctionTok{library}\NormalTok{(pracma)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Anexando pacote: 'pracma'
+\end{verbatim}
+
+\begin{verbatim}
+## Os seguintes objetos são mascarados por 'package:REdaS':
+## 
+##     deg2rad, rad2deg
+\end{verbatim}
+
+\begin{verbatim}
+## Os seguintes objetos são mascarados por 'package:signal':
+## 
+##     conv, ifft, interp1, pchip, polyval, roots
+\end{verbatim}
+
+\begin{verbatim}
+## O seguinte objeto é mascarado por 'package:purrr':
+## 
+##     cross
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(signal)}
+\FunctionTok{library}\NormalTok{(ggplot2)}
+\FunctionTok{library}\NormalTok{(dplyr)}
+
+\CommentTok{\# Configurações iniciais}
+\NormalTok{frequencia\_amostragem }\OtherTok{\textless{}{-}} \DecValTok{1000}
+\NormalTok{intervalo\_tempo }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{/}\NormalTok{ frequencia\_amostragem}
+\NormalTok{tempo }\OtherTok{\textless{}{-}} \FunctionTok{seq}\NormalTok{(}\AttributeTok{from =} \DecValTok{0}\NormalTok{, }\AttributeTok{to =} \DecValTok{10}\NormalTok{, }\AttributeTok{by =}\NormalTok{ intervalo\_tempo)}
+
+\CommentTok{\# Geração de ruído branco (base do sinal)}
+\NormalTok{sinal\_base }\OtherTok{\textless{}{-}} \FunctionTok{as.vector}\NormalTok{(}\FunctionTok{randn}\NormalTok{(}\AttributeTok{n =} \FunctionTok{length}\NormalTok{(tempo), }\AttributeTok{m =} \DecValTok{1}\NormalTok{))}
+\NormalTok{dados }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(tempo)}
+
+\CommentTok{\# Definição do burst do EMG}
+\NormalTok{tempo\_burst }\OtherTok{\textless{}{-}} \FunctionTok{seq}\NormalTok{(}\AttributeTok{from =} \DecValTok{0}\NormalTok{, }\AttributeTok{to =} \DecValTok{2}\NormalTok{, }\AttributeTok{by =}\NormalTok{ intervalo\_tempo)}
+\NormalTok{constante }\OtherTok{\textless{}{-}} \FloatTok{0.001}
+\NormalTok{gerar\_burst }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(t) \{}
+\NormalTok{  t }\SpecialCharTok{*}\NormalTok{ (}\DecValTok{2} \SpecialCharTok{{-}}\NormalTok{ constante }\SpecialCharTok{*}\NormalTok{ t) }\SpecialCharTok{*} \FunctionTok{exp}\NormalTok{(}\SpecialCharTok{{-}}\NormalTok{constante }\SpecialCharTok{*}\NormalTok{ t)}
+\NormalTok{\}}
+\NormalTok{sinal\_burst }\OtherTok{\textless{}{-}} \FunctionTok{gerar\_burst}\NormalTok{(}\DecValTok{1}\SpecialCharTok{:}\DecValTok{10000}\NormalTok{)}
+
+\CommentTok{\# Interpolação para ajustar ao tempo}
+\NormalTok{sinal\_burst }\OtherTok{\textless{}{-}} \FunctionTok{spline}\NormalTok{(}\AttributeTok{x =} \DecValTok{1}\SpecialCharTok{:}\DecValTok{10000}\NormalTok{, }\AttributeTok{y =}\NormalTok{ sinal\_burst, }\AttributeTok{xout =} \DecValTok{1}\SpecialCharTok{:}\DecValTok{10000}\NormalTok{)}\SpecialCharTok{$}\NormalTok{y}
+
+\CommentTok{\# Inserção dos bursts em 2s, 5s e 8s}
+\NormalTok{pontos\_insercao }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{((}\DecValTok{2}\SpecialCharTok{/}\NormalTok{intervalo\_tempo }\SpecialCharTok{+} \DecValTok{1}\NormalTok{), (}\DecValTok{5}\SpecialCharTok{/}\NormalTok{intervalo\_tempo }\SpecialCharTok{+} \DecValTok{1}\NormalTok{), (}\DecValTok{8}\SpecialCharTok{/}\NormalTok{intervalo\_tempo }\SpecialCharTok{+} \DecValTok{1}\NormalTok{))}
+\NormalTok{dados}\SpecialCharTok{$}\NormalTok{burst }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\FunctionTok{length}\NormalTok{(tempo))}
+
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\DecValTok{3}\NormalTok{) \{}
+\NormalTok{  inicio }\OtherTok{\textless{}{-}}\NormalTok{ pontos\_insercao[i]}
+\NormalTok{  fim }\OtherTok{\textless{}{-}} \FunctionTok{min}\NormalTok{(inicio }\SpecialCharTok{+} \FunctionTok{length}\NormalTok{(sinal\_burst) }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{, }\FunctionTok{length}\NormalTok{(tempo))  }\CommentTok{\# evitar ultrapassar limites}
+\NormalTok{  comprimento }\OtherTok{\textless{}{-}}\NormalTok{ fim }\SpecialCharTok{{-}}\NormalTok{ inicio }\SpecialCharTok{+} \DecValTok{1}
+\NormalTok{  dados}\SpecialCharTok{$}\NormalTok{burst[inicio}\SpecialCharTok{:}\NormalTok{fim] }\OtherTok{\textless{}{-}}\NormalTok{ sinal\_burst[}\DecValTok{1}\SpecialCharTok{:}\NormalTok{comprimento]}
+\NormalTok{\}}
+
+\CommentTok{\# Visualização dos bursts}
+\FunctionTok{ggplot}\NormalTok{(dados) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ tempo, }\AttributeTok{y =}\NormalTok{ burst)) }\SpecialCharTok{+}
+  \FunctionTok{theme\_bw}\NormalTok{(}\AttributeTok{base\_size =} \DecValTok{20}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{x =} \StringTok{"Tempo (s)"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Amplitude dos Bursts"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning: Removed 2000 rows containing missing values or values outside the scale range
+## (`geom_line()`).
+\end{verbatim}
+
+\includegraphics{Modulo8_files/figure-latex/unnamed-chunk-6-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Soma do ruído com os bursts}
+\NormalTok{dados }\OtherTok{\textless{}{-}}\NormalTok{ dados }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}
+    \AttributeTok{burst =} \FunctionTok{ifelse}\NormalTok{(}\FunctionTok{is.na}\NormalTok{(burst), }\DecValTok{0}\NormalTok{, burst),}
+    \AttributeTok{sinal\_total =}\NormalTok{ sinal\_base }\SpecialCharTok{+}\NormalTok{ burst}
+\NormalTok{  )}
+
+\CommentTok{\# Amplificação dos trechos com burst}
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\DecValTok{3}\NormalTok{) \{}
+\NormalTok{  inicio }\OtherTok{\textless{}{-}}\NormalTok{ pontos\_insercao[i]}
+\NormalTok{  fim }\OtherTok{\textless{}{-}} \FunctionTok{min}\NormalTok{(inicio }\SpecialCharTok{+} \FunctionTok{length}\NormalTok{(sinal\_burst) }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(dados))  }\CommentTok{\# evita ultrapassar o limite do data.frame}
+\NormalTok{  dados}\SpecialCharTok{$}\NormalTok{sinal\_total[inicio}\SpecialCharTok{:}\NormalTok{fim] }\OtherTok{\textless{}{-}} \FloatTok{1.2} \SpecialCharTok{*}\NormalTok{ dados}\SpecialCharTok{$}\NormalTok{sinal\_total[inicio}\SpecialCharTok{:}\NormalTok{fim]}
+\NormalTok{\}}
+
+\CommentTok{\# Visualização do sinal completo com bursts amplificados}
+\FunctionTok{ggplot}\NormalTok{(dados) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ tempo, }\AttributeTok{y =}\NormalTok{ sinal\_total)) }\SpecialCharTok{+}
+  \FunctionTok{theme\_bw}\NormalTok{(}\AttributeTok{base\_size =} \DecValTok{20}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{x =} \StringTok{"Tempo(s)"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Amplitude com Amplificação"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Modulo8_files/figure-latex/unnamed-chunk-6-2.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Criação do filtro Butterworth (ordem 3, 5 Hz)}
+\NormalTok{ordem }\OtherTok{\textless{}{-}} \DecValTok{3}
+\NormalTok{frequencia\_corte }\OtherTok{\textless{}{-}} \DecValTok{5}
+\NormalTok{frequencia\_normalizada }\OtherTok{\textless{}{-}}\NormalTok{ frequencia\_corte }\SpecialCharTok{/}\NormalTok{ (frequencia\_amostragem }\SpecialCharTok{/} \DecValTok{2}\NormalTok{)}
+\NormalTok{filtro\_butter }\OtherTok{\textless{}{-}} \FunctionTok{butter}\NormalTok{(ordem, frequencia\_normalizada, }\AttributeTok{type =} \StringTok{"low"}\NormalTok{)}
+\FunctionTok{freqz}\NormalTok{(}\AttributeTok{filt =}\NormalTok{ filtro\_butter, }\AttributeTok{Fs =}\NormalTok{ frequencia\_amostragem)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Modulo8_files/figure-latex/unnamed-chunk-6-3.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Criação do filtro Chebyshev Tipo I (ordem 3, 5 Hz, ripple 0.5 dB)}
+\NormalTok{ripple }\OtherTok{\textless{}{-}} \FloatTok{0.5}
+\NormalTok{filtro\_cheby }\OtherTok{\textless{}{-}} \FunctionTok{cheby1}\NormalTok{(ordem, ripple, frequencia\_normalizada, }\AttributeTok{type =} \StringTok{"low"}\NormalTok{)}
+\FunctionTok{freqz}\NormalTok{(}\AttributeTok{filt =}\NormalTok{ filtro\_cheby, }\AttributeTok{Fs =}\NormalTok{ frequencia\_amostragem)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Modulo8_files/figure-latex/unnamed-chunk-6-4.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Aplicação dos filtros}
+\NormalTok{dados}\SpecialCharTok{$}\NormalTok{sinal\_butter }\OtherTok{\textless{}{-}} \FunctionTok{filtfilt}\NormalTok{(}\AttributeTok{filt =}\NormalTok{ filtro\_butter, dados}\SpecialCharTok{$}\NormalTok{sinal\_total)}
+\NormalTok{dados}\SpecialCharTok{$}\NormalTok{sinal\_cheby }\OtherTok{\textless{}{-}} \FunctionTok{filtfilt}\NormalTok{(}\AttributeTok{filt =}\NormalTok{ filtro\_cheby, dados}\SpecialCharTok{$}\NormalTok{sinal\_total)}
+
+\CommentTok{\# Gráfico comparativo dos sinais}
+\NormalTok{cores }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"Original"} \OtherTok{=} \StringTok{"black"}\NormalTok{, }\StringTok{"Butterworth"} \OtherTok{=} \StringTok{"darkorange"}\NormalTok{, }\StringTok{"Chebyshev"} \OtherTok{=} \StringTok{"darkgreen"}\NormalTok{)}
+\FunctionTok{ggplot}\NormalTok{(}\FunctionTok{data.frame}\NormalTok{()) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{data =}\NormalTok{ dados, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ tempo, }\AttributeTok{y =}\NormalTok{ sinal\_total, }\AttributeTok{color =} \StringTok{"Original"}\NormalTok{)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{data =}\NormalTok{ dados, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ tempo, }\AttributeTok{y =}\NormalTok{ sinal\_butter, }\AttributeTok{color =} \StringTok{"Butterworth"}\NormalTok{)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{data =}\NormalTok{ dados, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ tempo, }\AttributeTok{y =}\NormalTok{ sinal\_cheby, }\AttributeTok{color =} \StringTok{"Chebyshev"}\NormalTok{)) }\SpecialCharTok{+}
+  \FunctionTok{theme\_bw}\NormalTok{(}\AttributeTok{base\_size =} \DecValTok{20}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{x =} \StringTok{"Tempo(s)"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Amplitude do Sinal"}\NormalTok{, }\AttributeTok{color =} \StringTok{"Tipo de Sinal"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{scale\_color\_manual}\NormalTok{(}\AttributeTok{values =}\NormalTok{ cores)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Modulo8_files/figure-latex/unnamed-chunk-6-5.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Zoom no primeiro burst (0 a 3 segundos)}
+\FunctionTok{ggplot}\NormalTok{(}\FunctionTok{data.frame}\NormalTok{()) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{data =}\NormalTok{ dados, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ tempo, }\AttributeTok{y =}\NormalTok{ sinal\_total, }\AttributeTok{color =} \StringTok{"Original"}\NormalTok{)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{data =}\NormalTok{ dados, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ tempo, }\AttributeTok{y =}\NormalTok{ sinal\_butter, }\AttributeTok{color =} \StringTok{"Butterworth"}\NormalTok{)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{data =}\NormalTok{ dados, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ tempo, }\AttributeTok{y =}\NormalTok{ sinal\_cheby, }\AttributeTok{color =} \StringTok{"Chebyshev"}\NormalTok{)) }\SpecialCharTok{+}
+  \FunctionTok{theme\_bw}\NormalTok{(}\AttributeTok{base\_size =} \DecValTok{20}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{coord\_cartesian}\NormalTok{(}\AttributeTok{xlim =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{3}\NormalTok{)) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{x =} \StringTok{"Tempo(s)"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Amplitude do Sinal"}\NormalTok{, }\AttributeTok{color =} \StringTok{"Tipo de Sinal"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{scale\_color\_manual}\NormalTok{(}\AttributeTok{values =}\NormalTok{ cores)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Modulo8_files/figure-latex/unnamed-chunk-6-6.pdf}
+
+\end{document}
