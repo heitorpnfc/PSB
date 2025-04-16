@@ -3,10 +3,10 @@ title: " "
 author: " "
 date: " "
 output: 
-  pdf_document:
-    highlight: tango
   html_document:
     df_print: paged
+  pdf_document:
+    highlight: tango
 always_allow_html: true
 ---
 
@@ -138,50 +138,59 @@ Dica: o intervalo entre os coeficientes da DFT é a resolução em frequência e
 
 ```{r}
 
-# install.packages("dygraphs")
-# install.packages("xts")
-# install.packages("htmlwidgets") # se precisar salvar como html
-
 library(dygraphs)
-library(xts)
 
+f <- 20
 fs <- 500
-f  <- 20
-T  <- 10
-N  <- fs*T
-t  <- seq(0, T - 1/fs, 1/fs)
-x  <- sin(2*pi*f*t)
-X    <- fft(x)
-amp  <- Mod(X)
-fase <- Arg(X)
-freq <- seq(0, fs*(N-1)/N, length.out=N)
+dt <- 1/fs
+t <- seq(from = 0, to = 5, by = dt)
+y <- sin(2*pi*f*t)
 
-freq_time <- as.POSIXct(freq, origin="1970-01-01", tz="UTC")
+sinal <- data.frame(x = t, y = y)
 
-amp_xts  <- xts(amp,  order.by = freq_time)
-fase_xts <- xts(fase, order.by = freq_time)
-
-# Plotagem de Amplitude
-dygraph(amp_xts, main="Espectro de Amplitude") %>%
-  dyAxis("x",
-    valueFormatter=
-      'function(v){return (v-0)/1 + " Hz"}',
-    axisLabelFormatter=
-      'function(v){return (v-0)/1 + " Hz"}'
-  ) %>%
-  dyAxis("y", label="Amplitude")
-
-# Plot de Fase
-dygraph(fase_xts, main="Espectro de Fase") %>%
-  dyAxis("x",
-    valueFormatter=
-      'function(v){return (v-0)/1 + " Hz"}',
-    axisLabelFormatter=
-      'function(v){return (v-0)/1 + " Hz"}'
-  ) %>%
-  dyAxis("y", label="Fase (rad)")
+dygraph(sinal, main = "Sinal senoidal") %>%
+  dyRangeSelector()
 
 ```
+
+```{r}
+
+N <- length(y)
+
+delta <- fs/N # Resolução em frequencia
+
+fn <- (length(y)-1)*delta # Frequencia para a n-ésima amostra do sinal
+
+ff <- seq(from = 0, to = fn, by = delta) # Vetor de frequencia
+
+y_fft <- fft(y) # FFT do sinal 
+
+# Plotagem do espectro de amplitude
+
+mag <- Mod(y_fft) # Amplitude
+
+dygraph(data.frame(x = ff, y = mag), main = "Espectro de amplitude",
+        xlab = "Frequencia (Hz)",
+        ylab = "Amplitude") %>%
+  dyRangeSelector() %>%
+  dyEvent(fs/2, label = "Simetria", labelLoc = "top")
+
+```
+
+```{r}
+
+# Espectro de fae
+
+teta <- atan2(Im(y_fft), Re(y_fft)) # Fase
+
+dygraph(data.frame(x = ff, y = teta), main = "Espectro de fase",
+        xlab = "Frequencia (Hz)",
+        ylab = "Fase") %>%
+  dyRangeSelector() %>%
+  dyEvent(fs/2, label = "Simetria", labelLoc = "top")
+
+```
+
 
 \newpage
 \section*{Questão 5}
@@ -225,10 +234,161 @@ kable_styling(kable(t(seqs)), full_width = FALSE, bootstrap_option = "striped")
 
 Desenhe um diagrama de butterfly para 16 amostras. Apresente as equações de cada saída X(k). Qual o ganho em velocidade da FFT quando comparado à DFT neste exemplo?
 
-![Diagrama de fluxo]("C:\Users\heito\Documents\GitHub\PSB\Módulo 9 - PSB\Questao 6.jpeg")
+```{r}
 
+knitr::include_graphics("C:/Users/heito/Documents/GitHub/PSB/Módulo 9 - PSB/Questao 6.jpg")
 
+```
 
+Nesse caso a FFt é mais rápida do que a DFT Nlog2(N) vezes. Uma vez que N = 16, então a FFT é 64 vezes mais rápido do que a DFT.
+
+\newpage
+\section*{Questão 7}
+
+> Questão 7
+
+No ambiente do R, leia o help da função fft (package: stats). Neste help existe uma implementação da DTF. Estude e comente os códigos apresentados no exemplo. Execute o exemplo, utilizando o sinal de entrada Z, e calculando os coeficientes da DFT por meio da equação geral e por meio da DFT. Utilize o trecho de código abaixo para calcular a diferença temporal entre a DFT e a FFT.
+
+```{r}
+
+x <- 1:4 # Cria um vetor de amostrar
+fft(x)
+
+```
+```{r}
+
+ptm <- proc.time()
+proc.time() - ptm
+
+```
+```{r}
+
+fft(fft(x), inverse = TRUE/length(x))
+
+```
+```{r}
+
+# DFT
+
+fft0 <- function(z, inverse = FALSE) {
+  n <- length(z)
+  if(n == 0)
+    return(z)
+  k <- 0:(n-1)
+  ff <- (if(inverse) 1 else -1) * 2 * pi * 1i * k/n
+  vapply(1:n, function(h) sum(z * exp(ff*(h-1))), complex(1))
+}
+
+relD <- function(x, y) 2 * abs(x - y) / abs (x + y)
+n <- 2^8 # N elementos
+
+set.seed(1234)
+z <- complex(n, rnorm(n), rnorm(n)) # Coef. Complexos
+
+summary(relD(fft(z), fft0(z)))
+```
+```{r}
+
+summary(relD(fft(z, inverse = TRUE), fft0(z, inverse = TRUE)))
+
+```
+
+```{r}
+
+ptm <- proc.time()
+fft(z)
+
+```
+```{r}
+
+proc.time() - ptm
+
+```
+```{r}
+
+ptm <- proc.time()
+fft0(z)
+
+```
+```{r}
+
+proc.time() - ptm
+
+```
+\newpage
+\section*{Questão 8}
+
+> Questão 8
+
+Gere um sinal y, formado pela adição de três componentes senoidais, de amplitude unitária, e oscilando a 10, 23 e 49 Hz. Adicione um ruído gaussiano ao sinal y, cuja amplitude máxima é no máximo 10% o valor máximo do sinal. Calcule, por meio do uso da função fft, o espectro de amplitude e fase para o sinal resultante. Adote a frequência de amostragem de 700 Hz, e a duração total do sinal de 10 segundos.
+
+```{r}
+
+fs <- 700 # Frequencia de amostragem
+dt <- 1/fs # Incremento
+f1 <- 10 # Frequencia y1
+f2 <- 23 # Frequencia y2
+f3 <- 49 # Frequencia y3
+t <- seq(from = 0, to = 10, by = dt) # Vetor de tempo
+
+y1 <- sin(2*pi*f1*t) # Seno 1
+y2 <- sin(2*pi*f2*t) # Seno 2
+y3 <- sin(2*pi*f3*t) # Seno 3
+
+y <- y1 + y2 +y3
+
+# Plotagem
+dygraph(data.frame(x = t, y = y), main = "Sinal sem ruído") %>%
+  dyRangeSelector()
+
+```
+
+```{r}
+
+set.seed(1010)
+y <- y + 0.1*max(y)*rnorm(length(t)) # Ruído
+
+# Plotagem
+
+dygraph(data.frame(x = t, y = y), main = "Sinal com ruído") %>%
+  dyRangeSelector()
+```
+
+```{r}
+
+N <- length(y)
+delta <- fs/N # Resolução da frequencia
+
+fn <- (length(y)-1)*delta # Frequencia para a n-ésina amostra
+ff <- seq(from = 0, to = fn, by = delta) # Vetor de frequencia
+
+y_fft <- fft(y) # FFT do sinal gerado
+
+# Espectro de amplitude
+
+mag <- Mod(y_fft) # Amplitude
+
+dygraph(data.frame(x = ff, y = mag), main = "Espectro de amplitude", 
+        xlab = "Frequencia (Hz)", 
+        ylab = "Amplitude") %>%
+  dyRangeSelector() %>%
+  dyEvent(fs/2, label = "Simetria", labelLoc = "top")
+
+```
+
+```{r}
+
+# Espectro de fase
+
+teta <- atan2(Im(y_fft), Re(y_fft)) # Fase
+
+dygraph(data.frame(x = ff, y = teta), main = "Espectro de fase",
+        xlab = "Frequencia (Hz)",
+        ylab = "Fase") %>%
+  dyRangeSelector() %>%
+  dyEvent(fs/2, label = "Simetria", labelLoc = "top")
+
+```
 
 
 
