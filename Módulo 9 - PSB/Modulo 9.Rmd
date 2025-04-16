@@ -1,0 +1,587 @@
+---
+title: " "
+author: " "
+date: " "
+output: 
+  pdf_document:
+    highlight: tango
+  html_document:
+    df_print: paged
+always_allow_html: true
+---
+
+\newpage
+\begin{titlepage}
+\begin{center}
+
+\large
+UNIVERSIDADE FEDERAL DE UBERLÂNDIA\\
+FACULDADE DE ENGENHARIA ELÉTRICA\\
+GRADUAÇÃO EM ENGENHARIA BIOMÉDICA\\[7cm]
+
+\Large
+\textbf{Heitor Pereira Nunes Fernandes Cunha}\\[2cm]
+
+\textbf{\large Processamento de Sinais Biomédicos: Módulo 9}\\[10cm]
+
+\large
+Uberlândia, MG\\
+2025
+
+\end{center}
+\end{titlepage}
+
+\newpage
+\section*{Questão 1}
+
+> Questão 1
+
+Calcule os coeficientes da DFT para a sequência x(n) = {-1, 1, 2, -2}. Utilize a definição básica da DFT para realizar o cálculo.
+
+```{r}
+
+
+# Sequência de entrada x(n)
+x <- c(-1, 1, 2, -2)
+
+# Tamanho da sequência (N = 4)
+N <- length(x)
+
+# Vetor para armazenar o resultado X(k)
+X_definicao <- numeric(N) + 0i
+
+# Cálculo da DFT usando a definição:
+for (k in 0:(N-1)) {
+  soma <- 0 + 0i
+  for (n in 0:(N-1)) {
+    soma <- soma + x[n+1] * exp(-1i * 2 * pi * k * n / N)
+  }
+  X_definicao[k+1] <- soma
+}
+
+# Mostrando o resultado "manual"
+cat("DFT calculada pela definição:\n")
+print(X_definicao)
+
+```
+
+\newpage
+\section*{Questão 2}
+
+> Questão 2
+
+Calcule a matriz de rotação de fatores, W, para a sequência x(n) = {-1, 1, 2, -2}. Calcule os coeficientes da DFT e da IDFT baseado nesta matriz.
+
+```{r}
+
+# Definição do sinal de entrada
+
+x <- c(-1, 1, 2, -2)  
+N <- length(x)        
+
+# 2) Construção da matriz W
+W <- matrix( 
+  c(1, 1, 1, 1,
+    1, -1i, -1, 1i,
+    1, -1, 1, -1,
+    1, 1i, -1, -1i),
+  nrow = 4,
+  ncol = 4,
+  byrow = TRUE)
+
+print(W)
+
+```
+```{r}
+
+X <- W %*% x # Coef. da DFT
+
+print(X)
+
+```
+```{r}
+
+INV <- (1/N) * Conj(W)
+print(INV)
+
+```
+```{r}
+
+x <- INV %*% X # Inversa de DFT
+
+print(x)
+
+```
+\newpage
+\section*{Questão 3}
+
+> Questão 3
+
+Assumindo a sequência de x(n) = {-1, 1, 2, -2} foi amostrada a fs = 33Hz, qual a resolução em frequência da DFT?
+
+```{r}
+
+x <- c(-1, 1, 2, -2)
+fs <- 33
+N <- length(x)
+resolucao_freq <- fs / N
+resolucao_freq  # 8.25 Hz
+
+```
+\newpage
+\section*{Questão 4}
+
+> Questão 4
+
+Gere um sinal senoidal, oscilando a 20 Hz, amostrado a 500 Hz e de duração igual a 10 segundos. Calcule o espectro de amplitude e de fase da DFT para o sinal. Plote os gráficos dos espectros obtidos. 
+Dica: o intervalo entre os coeficientes da DFT é a resolução em frequência em Hz.
+
+```{r}
+
+# install.packages("dygraphs")
+# install.packages("xts")
+# install.packages("htmlwidgets") # se precisar salvar como html
+
+library(dygraphs)
+library(xts)
+
+fs <- 500
+f  <- 20
+T  <- 10
+N  <- fs*T
+t  <- seq(0, T - 1/fs, 1/fs)
+x  <- sin(2*pi*f*t)
+X    <- fft(x)
+amp  <- Mod(X)
+fase <- Arg(X)
+freq <- seq(0, fs*(N-1)/N, length.out=N)
+
+freq_time <- as.POSIXct(freq, origin="1970-01-01", tz="UTC")
+
+amp_xts  <- xts(amp,  order.by = freq_time)
+fase_xts <- xts(fase, order.by = freq_time)
+
+# Plotagem de Amplitude
+dygraph(amp_xts, main="Espectro de Amplitude") %>%
+  dyAxis("x",
+    valueFormatter=
+      'function(v){return (v-0)/1 + " Hz"}',
+    axisLabelFormatter=
+      'function(v){return (v-0)/1 + " Hz"}'
+  ) %>%
+  dyAxis("y", label="Amplitude")
+
+# Plot de Fase
+dygraph(fase_xts, main="Espectro de Fase") %>%
+  dyAxis("x",
+    valueFormatter=
+      'function(v){return (v-0)/1 + " Hz"}',
+    axisLabelFormatter=
+      'function(v){return (v-0)/1 + " Hz"}'
+  ) %>%
+  dyAxis("y", label="Fase (rad)")
+
+```
+
+\newpage
+\section*{Questão 5}
+
+> Questão 5
+
+Explique o que é ordenação bit-reversa e forneça um exemplo de aplicação da mesma sobre a sequência de caracteres hojeodiaestabelo. Qual a sequência resultante?
+
+É o reordenamento dos elementos de um vetor de tamanho N = 2^m de acordo com a inversão dos bits dos seus índices. Em outras palavras, se um elemento originalmente está na posição (índice) i, nós pegamos a representação binária de i (com m bits), invertemos a ordem desses bits e obtemos assim o “novo índice” onde esse elemento será colocado.
+
+Por exemplo:
+
+```{r}
+
+library(kableExtra)
+
+sequencia <- c("h", "o", "j", "e", "o", "d", "i", "a", "e", "s", "t", "a", "b", "e", "l", "o")
+
+k_decimal <- seq(1:length(sequencia))
+
+k_binario <- c("0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111", "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111")
+
+k_inverso <- c("0000", "1000", "0100", "1100", "0010", "1010", "0110", "1110", "0001", "1001", "0101", "1101", "0011", "1011", "0111", "1111")
+
+# Criando sequência ordenada com base nos identificadores binários para cada algarismo
+
+sequencia_ordenada <- c("h", "e", "o", "b", "j", "t", "i", "l", "o", "s", "d", "e", "e", "a", "a", "o")
+
+seqs <- data.frame(sequencia, k_decimal, k_binario, k_inverso, sequencia_ordenada)
+
+colnames(seqs) <- c("Sequência", "k_decimal", "k_binario", "k_reverso", "Sequência ordenada")
+
+kable_styling(kable(t(seqs)), full_width = FALSE, bootstrap_option = "striped")
+
+```
+
+\newpage
+\section*{Questão 6}
+
+> Questão 6
+
+Desenhe um diagrama de butterfly para 16 amostras. Apresente as equações de cada saída X(k). Qual o ganho em velocidade da FFT quando comparado à DFT neste exemplo?
+
+![Diagrama de fluxo](C:\Users\heito\Documents\GitHub\PSB\Módulo 9 - PSB\Questao 6.jpeg "Diagrama de butterfly para 16 amostras")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
