@@ -225,7 +225,8 @@ kable_styling(kable(t(seqs)), full_width = FALSE, bootstrap_option = "striped")
 
 Desenhe um diagrama de butterfly para 16 amostras. Apresente as equações de cada saída X(k). Qual o ganho em velocidade da FFT quando comparado à DFT neste exemplo?
 
-![Diagrama de fluxo](C:\Users\heito\Documents\GitHub\PSB\Módulo 9 - PSB\Questao 6.jpeg "Diagrama de butterfly para 16 amostras")
+![Diagrama de fluxo]("C:\Users\heito\Documents\GitHub\PSB\Módulo 9 - PSB\Questao 6.jpeg")
+
 
 
 
